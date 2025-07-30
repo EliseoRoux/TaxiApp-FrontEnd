@@ -1,0 +1,27 @@
+
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Entorno de desarrollo
+.env.local
+.env.development
+.env
+
+# Producción
+dist/
+build/
+
+# Misceláneos
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.idea/
+.vscode/
+*.tmp
+
+# Supabase (si usas variables locales)
+.supabase/
