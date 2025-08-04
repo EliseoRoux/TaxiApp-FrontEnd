@@ -1,5 +1,5 @@
 // Importa el componente ListaServicios
-import { ListaServicios } from './pages/Servicios/ListaServicios'
+import { ListaServicios } from './features/servicios/pages/ListaServicios'
 
 // Componente principal de la aplicación
 function App() {
