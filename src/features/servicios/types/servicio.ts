@@ -1,12 +1,13 @@
 export interface Conductor {
-  id_conductor: number;
+  idConductor: number;
   nombre: string;
   telefono: string;
 }
 
 export interface Cliente {
-  id_cliente: number;
+  idCliente?: number;
   nombre: string;
+  telefono: string;
 }
 
 // Versión para lo que retorna Supabase (con arrays)
@@ -21,8 +22,8 @@ export interface ServicioDB {
   n_persona: number;
   precio_10: number;
   requisitos: string;
-  conductor: Conductor[];
-  cliente: Cliente[];
+  conductor: { id_conductor: number; nombre: string; telefono: string }[];
+  cliente: { id_cliente: number; nombre: string; telefono: string }[];
 }
 
 // Versión para tu aplicación (con objetos)

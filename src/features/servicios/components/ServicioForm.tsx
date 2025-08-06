@@ -49,6 +49,25 @@ export const ServicioForm = ({ initialData, onSubmit, onCancel }: Props) => {
 
   return (
     <form onSubmit={handleSubmit(submitHandler)} className="space-y-4 p-4 border rounded-lg">
+      {/* Campo Cliente */}
+      <div>
+        <label className="block text-sm font-medium">Nombre Cliente: </label>
+        <input
+          {...register('cliente.nombre', { required: 'Campo obligatorio' })}
+          className="mt-1 p-2 w-full border rounded"
+        />
+        {errors.cliente?.nombre && <span className="text-red-500 text-sm">{errors.cliente.nombre.message}</span>}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium">Telefono Cliente: </label>
+        <input
+          {...register('cliente.telefono', { required: 'Campo obligatorio' })}
+          className="mt-1 p-2 w-full border rounded"
+        />
+        {errors.cliente?.telefono && <span className="text-red-500 text-sm">{errors.cliente.telefono.message}</span>}
+      </div>
+      
       {/* Campo Origen */}
       <div>
         <label className="block text-sm font-medium">Origen: </label>
@@ -69,15 +88,7 @@ export const ServicioForm = ({ initialData, onSubmit, onCancel }: Props) => {
         {errors.destino && <span className="text-red-500 text-sm">{errors.destino.message}</span>}
       </div>
 
-      {/* Campo Cliente */}
-      <div>
-        <label className="block text-sm font-medium">Cliente: </label>
-        <input
-          {...register('cliente.nombre', { required: 'Campo obligatorio' })}
-          className="mt-1 p-2 w-full border rounded"
-        />
-        {errors.cliente?.nombre && <span className="text-red-500 text-sm">{errors.cliente.nombre.message}</span>}
-      </div>
+      
 
       {/* Campo Precio */}
       <div>

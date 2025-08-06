@@ -13,8 +13,19 @@ const transformServicio = (servicioDB: ServicioDB): Servicio => ({
   nPersona: servicioDB.n_persona, // Mapeo explícito
   precio10: servicioDB.precio_10, // Mapeo explícito
   requisitos: servicioDB.requisitos,
-  conductor: servicioDB.conductor?.[0],
-  cliente: servicioDB.cliente?.[0],
+  // Transformamos conductor y clientes anidados
+  conductor: servicioDB.conductor?.[0]
+    ?{ 
+      idConductor: servicioDB.conductor?.[0].id_conductor,
+      nombre: servicioDB.conductor?.[0].nombre,
+      telefono: servicioDB.conductor?.[0].telefono
+  } : undefined,
+  cliente: servicioDB.cliente?.[0]
+  ?{
+    idCliente: servicioDB.cliente?.[0].id_cliente,
+    nombre: servicioDB.cliente?.[0].nombre,
+    telefono: servicioDB.cliente?.[0].telefono
+  } : undefined,
 });
 
 export const fetchServicios = async (): Promise<Servicio[]> => {
@@ -33,21 +44,13 @@ export const fetchServicios = async (): Promise<Servicio[]> => {
       precio_10,
       requisitos,
       conductor: id_conductor (id_conductor, nombre, telefono),
-      cliente: id_cliente (id_cliente, nombre)
+      cliente: id_cliente (id_cliente, nombre, telefono)
     `
     )
     .order("fecha", { ascending: false });
 
   if (error) throw new Error(error.message);
-  return data
-    ? data.map((item) => ({
-        ...item,
-        nPersona: item.n_persona, // Mapea n_persona a nPersonas
-        precio10: item.precio_10, // Mapea precio_10 a precio10
-        conductor: item.conductor?.[0],
-        cliente: item.cliente?.[0],
-      }))
-    : [];
+  return data ? data.map(transformServicio) : [];
 };
 
 // Las demás funciones (create, update, delete) se mantienen igual
@@ -58,36 +61,21 @@ export const fetchServicios = async (): Promise<Servicio[]> => {
 export const createServicio = async (
   servicio: ServicioFormData
 ): Promise<Servicio> => {
-  // Convertimos los nombres camelCase a snake_case para Supabase
-  const servicioDB = {
-    ...servicio,
-    n_persona: servicio.nPersona,
-    precio_10: servicio.precio10,
-  };
+  const response = await fetch('http://localhost:8080/api/servicio', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(servicio)
+  });
 
-  const { data, error } = await supabase
-    .from("servicio")
-    .insert(servicioDB)
-    .select(
-      `
-      id_servicio,
-      origen,
-      destino,
-      precio,
-      fecha,
-      eurotaxi,
-      hora,
-      n_persona,
-      precio_10,
-      requisitos,
-      conductor: id_conductor (id_conductor, nombre, telefono),
-      cliente: id_cliente (id_cliente, nombre)
-    `
-    )
-    .single();
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Error al crear servicio: ${errorText}`);
+  }
 
-  if (error) throw new Error(error.message);
-  return transformServicio(data);
+  const data = await response.json();
+  return transformServicio(data); // o adaptar a transformServicio(data) si usas una transformación
 };
 
 /**
