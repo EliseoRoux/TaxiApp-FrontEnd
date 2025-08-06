@@ -61,7 +61,7 @@ export const fetchServicios = async (): Promise<Servicio[]> => {
 export const createServicio = async (
   servicio: ServicioFormData
 ): Promise<Servicio> => {
-  const response = await fetch('http://localhost:8080/api/servicio', {
+  const response = await fetch('http://localhost:8080/servicios', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
