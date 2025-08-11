@@ -19,7 +19,7 @@ export const ServicioForm = ({ initialData, onSubmit, onCancel }: Props) => {
     handleSubmit,
     formState: { errors },
     watch,
-    setValue, // Eliminado getValues ya que no se usa
+    setValue, 
   } = useForm<ServicioFormData>({
     defaultValues: {
       ...initialData,
@@ -32,7 +32,7 @@ export const ServicioForm = ({ initialData, onSubmit, onCancel }: Props) => {
         }),
       eurotaxi: initialData?.eurotaxi || false,
       precio10: initialData?.precio
-        ? Number((initialData.precio * 1.1).toFixed(2))
+        ? Number((initialData.precio * 0.1).toFixed(2))
         : undefined,
       conductor: initialData?.conductor || null,
     },
@@ -42,7 +42,7 @@ export const ServicioForm = ({ initialData, onSubmit, onCancel }: Props) => {
   const precio = watch("precio");
   useEffect(() => {
     if (precio && typeof precio === "number") {
-      setValue("precio10", Number((precio * 1.1).toFixed(2)));
+      setValue("precio10", Number((precio * 0.1).toFixed(2)));
     } else {
       setValue("precio10", 0);
     }
@@ -92,7 +92,7 @@ export const ServicioForm = ({ initialData, onSubmit, onCancel }: Props) => {
         n_persona: data.nPersona,
         precio_10:
           data.precio10 ||
-          (data.precio ? Number((data.precio * 1.1).toFixed(2)) : 0),
+          (data.precio ? Number((data.precio * 0.1).toFixed(2)) : 0),
         id_conductor: data.conductor?.idConductor || null,
         id_cliente: data.cliente?.idCliente || null,
       };
@@ -176,7 +176,7 @@ export const ServicioForm = ({ initialData, onSubmit, onCancel }: Props) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium">Precio +10%: </label>
+        <label className="block text-sm font-medium">Precio 10%: </label>
         <input
           type="number"
           step="0.01"

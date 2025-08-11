@@ -1,47 +1,81 @@
 import { supabase } from "../../../lib/supabaseClient";
-import type { Servicio, ServicioFormData, Conductor } from "../types/servicio";
+import type { Servicio, ServicioFormData, Conductor, Cliente } from "../types/servicio";
 
+/* -------------------- Tipos intermedios para API -------------------- */
+interface ConductorAPI {
+  id_conductor?: number;
+  idConductor?: number;
+  nombre: string;
+  telefono: string;
+  deuda?: number;
+  dinero_generado?: number;
+  dineroGenerado?: number;
+}
 
+interface ClienteAPI {
+  id_cliente?: number;
+  idCliente?: number;
+  nombre: string;
+  telefono: string;
+}
 
-// Función para transformar los datos de Supabase
-const transformServicio = (data: {
-  id_servicio: number;
+interface ServicioAPIResponse {
+  id_servicio?: number;
+  idServicio?: number;
   origen: string;
   destino: string;
   precio: number;
   fecha: string;
   eurotaxi: boolean;
   hora: string;
-  n_persona: number;
-  precio_10: number;
+  n_persona?: number;
+  nPersona?: number;
+  precio_10?: number;
+  precio10?: number;
   requisitos: string;
-  conductor: { id_conductor: number; nombre: string; telefono: string }[] | null;
-  cliente: { id_cliente: number; nombre: string; telefono: string }[] | null;
-}): Servicio => {
+  conductor?: ConductorAPI | ConductorAPI[] | null;
+  cliente?: ClienteAPI | ClienteAPI[] | null;
+}
+
+/* -------------------- Transformador -------------------- */
+const transformServicio = (data: ServicioAPIResponse): Servicio => {
+  const mapConductor = (c: ConductorAPI): Conductor => ({
+    idConductor: c.id_conductor ?? c.idConductor ?? 0,
+    nombre: c.nombre,
+    telefono: c.telefono,
+    deuda: c.deuda ?? null,
+    dineroGenerado: c.dinero_generado ?? c.dineroGenerado ?? null
+  });
+
+  const mapCliente = (c: ClienteAPI): Cliente => ({
+    idCliente: c.id_cliente ?? c.idCliente,
+    nombre: c.nombre,
+    telefono: c.telefono
+  });
+
   return {
-    id_servicio: data.id_servicio,
+    id_servicio: data.id_servicio ?? data.idServicio ?? 0,
     origen: data.origen,
     destino: data.destino,
     precio: data.precio,
     fecha: data.fecha,
     eurotaxi: data.eurotaxi,
     hora: data.hora,
-    nPersona: data.n_persona,
-    precio10: data.precio_10,
+    nPersona: data.n_persona ?? data.nPersona ?? 0,
+    precio10: data.precio_10 ?? data.precio10 ?? 0,
     requisitos: data.requisitos,
-    conductor: data.conductor?.[0] ? {  // Accedemos al primer elemento del array
-      idConductor: data.conductor[0].id_conductor,
-      nombre: data.conductor[0].nombre,
-      telefono: data.conductor[0].telefono
-    } : null,
-    cliente: data.cliente?.[0] ? {  // Accedemos al primer elemento del array
-      idCliente: data.cliente[0].id_cliente,
-      nombre: data.cliente[0].nombre,
-      telefono: data.cliente[0].telefono
-    } : null
+
+    conductor: Array.isArray(data.conductor)
+      ? (data.conductor[0] ? mapConductor(data.conductor[0]) : null)
+      : (data.conductor ? mapConductor(data.conductor) : null),
+
+    cliente: Array.isArray(data.cliente)
+      ? (data.cliente[0] ? mapCliente(data.cliente[0]) : null)
+      : (data.cliente ? mapCliente(data.cliente) : null)
   };
 };
 
+/* -------------------- API Supabase -------------------- */
 export const fetchServicios = async (): Promise<Servicio[]> => {
   const { data, error } = await supabase
     .from("servicio")
@@ -58,13 +92,12 @@ export const fetchServicios = async (): Promise<Servicio[]> => {
       requisitos,
       id_conductor,
       id_cliente,
-      conductor:conductor(id_conductor, nombre, telefono),
+      conductor:conductor(id_conductor, nombre, telefono, deuda, dinero_generado),
       cliente:cliente(id_cliente, nombre, telefono)
     `)
     .order("fecha", { ascending: true });
 
   if (error) throw new Error(error.message);
-
   if (!data) return [];
 
   return data.map(transformServicio);
@@ -73,9 +106,8 @@ export const fetchServicios = async (): Promise<Servicio[]> => {
 export const createServicio = async (
   servicio: ServicioFormData
 ): Promise<Servicio> => {
-  // Primero creamos el cliente si no existe
   let clienteId = servicio.cliente?.idCliente;
-  
+
   if (!clienteId && servicio.cliente?.nombre && servicio.cliente.telefono) {
     const { data: newCliente, error: clienteError } = await supabase
       .from("cliente")
@@ -85,12 +117,11 @@ export const createServicio = async (
       })
       .select("id_cliente")
       .single();
-    
+
     if (clienteError) throw new Error(clienteError.message);
     clienteId = newCliente.id_cliente;
   }
 
-  // Creamos el servicio
   const { data, error } = await supabase
     .from("servicio")
     .insert({
@@ -117,13 +148,12 @@ export const createServicio = async (
       n_persona,
       precio_10,
       requisitos,
-      conductor:conductor(id_conductor, nombre, telefono),
+      conductor:conductor(id_conductor, nombre, telefono, deuda, dinero_generado),
       cliente:cliente(id_cliente, nombre, telefono)
     `)
     .single();
 
   if (error) throw new Error(error.message);
-  
   return transformServicio(data);
 };
 
@@ -131,7 +161,6 @@ export const updateServicio = async (
   id: number,
   servicio: Partial<ServicioFormData>
 ): Promise<Servicio> => {
-  // Preparamos los datos para actualizar
   const updateData = {
     origen: servicio.origen,
     destino: servicio.destino,
@@ -161,13 +190,12 @@ export const updateServicio = async (
       n_persona,
       precio_10,
       requisitos,
-      conductor:conductor(id_conductor, nombre, telefono),
+      conductor:conductor(id_conductor, nombre, telefono, deuda, dinero_generado),
       cliente:cliente(id_cliente, nombre, telefono)
     `)
     .single();
 
   if (error) throw new Error(error.message);
-  
   return transformServicio(data);
 };
 
@@ -183,13 +211,17 @@ export const deleteServicio = async (id: number): Promise<void> => {
 export const fetchConductores = async (): Promise<Conductor[]> => {
   const { data, error } = await supabase
     .from("conductor")
-    .select("id_conductor, nombre, telefono")
+    .select("id_conductor, nombre, telefono, deuda, dinero_generado")
     .order("nombre", { ascending: true });
 
   if (error) throw new Error(error.message);
-  return data ? data.map(c => ({
-    idConductor: c.id_conductor,
-    nombre: c.nombre,
-    telefono: c.telefono
-  })) : [];
+  return data
+    ? data.map(c => ({
+        idConductor: c.id_conductor,
+        nombre: c.nombre,
+        telefono: c.telefono,
+        deuda: c.deuda ?? null,
+        dineroGenerado: c.dinero_generado ?? null
+      }))
+    : [];
 };

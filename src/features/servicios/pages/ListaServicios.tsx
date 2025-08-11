@@ -88,7 +88,7 @@ export const ListaServicios = () => {
                         Precio +10%:{" "}
                       </span>
                       <span className="font-bold">
-                        {(servicio.precio * 1.1).toFixed(2)}€
+                        {(servicio.precio * 0.1).toFixed(2)}€
                       </span>
                     </div>
 
