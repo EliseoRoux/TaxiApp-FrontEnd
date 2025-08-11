@@ -1,38 +1,51 @@
 import { supabase } from "../../../lib/supabaseClient";
-import type { Servicio, ServicioDB, ServicioFormData } from "../types/servicio";
+import type { Servicio, ServicioFormData, Conductor } from "../types/servicio";
+
+
 
 // Función para transformar los datos de Supabase
-const transformServicio = (servicioDB: ServicioDB): Servicio => ({
-  id_servicio: servicioDB.id_servicio,
-  origen: servicioDB.origen,
-  destino: servicioDB.destino,
-  precio: servicioDB.precio,
-  fecha: servicioDB.fecha,
-  eurotaxi: servicioDB.eurotaxi,
-  hora: servicioDB.hora,
-  nPersona: servicioDB.n_persona, // Mapeo explícito
-  precio10: servicioDB.precio_10, // Mapeo explícito
-  requisitos: servicioDB.requisitos,
-  // Transformamos conductor y clientes anidados
-  conductor: servicioDB.conductor?.[0]
-    ?{ 
-      idConductor: servicioDB.conductor?.[0].id_conductor,
-      nombre: servicioDB.conductor?.[0].nombre,
-      telefono: servicioDB.conductor?.[0].telefono
-  } : undefined,
-  cliente: servicioDB.cliente?.[0]
-  ?{
-    idCliente: servicioDB.cliente?.[0].id_cliente,
-    nombre: servicioDB.cliente?.[0].nombre,
-    telefono: servicioDB.cliente?.[0].telefono
-  } : undefined,
-});
+const transformServicio = (data: {
+  id_servicio: number;
+  origen: string;
+  destino: string;
+  precio: number;
+  fecha: string;
+  eurotaxi: boolean;
+  hora: string;
+  n_persona: number;
+  precio_10: number;
+  requisitos: string;
+  conductor: { id_conductor: number; nombre: string; telefono: string }[] | null;
+  cliente: { id_cliente: number; nombre: string; telefono: string }[] | null;
+}): Servicio => {
+  return {
+    id_servicio: data.id_servicio,
+    origen: data.origen,
+    destino: data.destino,
+    precio: data.precio,
+    fecha: data.fecha,
+    eurotaxi: data.eurotaxi,
+    hora: data.hora,
+    nPersona: data.n_persona,
+    precio10: data.precio_10,
+    requisitos: data.requisitos,
+    conductor: data.conductor?.[0] ? {  // Accedemos al primer elemento del array
+      idConductor: data.conductor[0].id_conductor,
+      nombre: data.conductor[0].nombre,
+      telefono: data.conductor[0].telefono
+    } : null,
+    cliente: data.cliente?.[0] ? {  // Accedemos al primer elemento del array
+      idCliente: data.cliente[0].id_cliente,
+      nombre: data.cliente[0].nombre,
+      telefono: data.cliente[0].telefono
+    } : null
+  };
+};
 
 export const fetchServicios = async (): Promise<Servicio[]> => {
   const { data, error } = await supabase
     .from("servicio")
-    .select(
-      `
+    .select(`
       id_servicio,
       origen,
       destino,
@@ -43,62 +56,121 @@ export const fetchServicios = async (): Promise<Servicio[]> => {
       n_persona,
       precio_10,
       requisitos,
-      conductor: id_conductor (id_conductor, nombre, telefono),
-      cliente: id_cliente (id_cliente, nombre, telefono)
-    `
-    )
-    .order("fecha", { ascending: false });
+      id_conductor,
+      id_cliente,
+      conductor:conductor(id_conductor, nombre, telefono),
+      cliente:cliente(id_cliente, nombre, telefono)
+    `)
+    .order("fecha", { ascending: true });
 
   if (error) throw new Error(error.message);
-  return data ? data.map(transformServicio) : [];
+
+  if (!data) return [];
+
+  return data.map(transformServicio);
 };
 
-// Las demás funciones (create, update, delete) se mantienen igual
-
-/**
- * Crea un nuevo servicio
- */
 export const createServicio = async (
   servicio: ServicioFormData
 ): Promise<Servicio> => {
-  const response = await fetch('http://localhost:8080/servicios', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(servicio)
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Error al crear servicio: ${errorText}`);
+  // Primero creamos el cliente si no existe
+  let clienteId = servicio.cliente?.idCliente;
+  
+  if (!clienteId && servicio.cliente?.nombre && servicio.cliente.telefono) {
+    const { data: newCliente, error: clienteError } = await supabase
+      .from("cliente")
+      .insert({
+        nombre: servicio.cliente.nombre,
+        telefono: servicio.cliente.telefono
+      })
+      .select("id_cliente")
+      .single();
+    
+    if (clienteError) throw new Error(clienteError.message);
+    clienteId = newCliente.id_cliente;
   }
 
-  const data = await response.json();
-  return transformServicio(data); // o adaptar a transformServicio(data) si usas una transformación
+  // Creamos el servicio
+  const { data, error } = await supabase
+    .from("servicio")
+    .insert({
+      origen: servicio.origen,
+      destino: servicio.destino,
+      precio: servicio.precio,
+      fecha: servicio.fecha,
+      eurotaxi: servicio.eurotaxi,
+      hora: servicio.hora,
+      n_persona: servicio.nPersona,
+      precio_10: servicio.precio10,
+      requisitos: servicio.requisitos,
+      id_conductor: servicio.conductor?.idConductor,
+      id_cliente: clienteId
+    })
+    .select(`
+      id_servicio,
+      origen,
+      destino,
+      precio,
+      fecha,
+      eurotaxi,
+      hora,
+      n_persona,
+      precio_10,
+      requisitos,
+      conductor:conductor(id_conductor, nombre, telefono),
+      cliente:cliente(id_cliente, nombre, telefono)
+    `)
+    .single();
+
+  if (error) throw new Error(error.message);
+  
+  return transformServicio(data);
 };
 
-/**
- * Actualiza un servicio existente
- */
 export const updateServicio = async (
   id: number,
   servicio: Partial<ServicioFormData>
 ): Promise<Servicio> => {
+  // Preparamos los datos para actualizar
+  const updateData = {
+    origen: servicio.origen,
+    destino: servicio.destino,
+    precio: servicio.precio,
+    fecha: servicio.fecha,
+    eurotaxi: servicio.eurotaxi,
+    hora: servicio.hora,
+    n_persona: servicio.nPersona,
+    precio_10: servicio.precio10,
+    requisitos: servicio.requisitos,
+    id_conductor: servicio.conductor?.idConductor,
+    id_cliente: servicio.cliente?.idCliente
+  };
+
   const { data, error } = await supabase
     .from("servicio")
-    .update(servicio)
+    .update(updateData)
     .eq("id_servicio", id)
-    .select()
+    .select(`
+      id_servicio,
+      origen,
+      destino,
+      precio,
+      fecha,
+      eurotaxi,
+      hora,
+      n_persona,
+      precio_10,
+      requisitos,
+      conductor:conductor(id_conductor, nombre, telefono),
+      cliente:cliente(id_cliente, nombre, telefono)
+    `)
     .single();
 
   if (error) throw new Error(error.message);
-  return data;
+  
+  return transformServicio(data);
 };
 
-/**
- * Elimina un servicio
- */
 export const deleteServicio = async (id: number): Promise<void> => {
   const { error } = await supabase
     .from("servicio")
@@ -106,4 +178,18 @@ export const deleteServicio = async (id: number): Promise<void> => {
     .eq("id_servicio", id);
 
   if (error) throw new Error(error.message);
+};
+
+export const fetchConductores = async (): Promise<Conductor[]> => {
+  const { data, error } = await supabase
+    .from("conductor")
+    .select("id_conductor, nombre, telefono")
+    .order("nombre", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data ? data.map(c => ({
+    idConductor: c.id_conductor,
+    nombre: c.nombre,
+    telefono: c.telefono
+  })) : [];
 };

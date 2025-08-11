@@ -22,8 +22,18 @@ export interface ServicioDB {
   n_persona: number;
   precio_10: number;
   requisitos: string;
-  conductor: { id_conductor: number; nombre: string; telefono: string }[];
-  cliente: { id_cliente: number; nombre: string; telefono: string }[];
+  id_conductor: number | null;
+  id_cliente: number | null;
+  conductor: {
+    id_conductor: number;
+    nombre: string;
+    telefono: string;
+  }[] | null;  // Ahora es un array
+  cliente: {
+    id_cliente: number;
+    nombre: string;
+    telefono: string;
+  }[] | null;  // Ahora es un array
 }
 
 // Versión para tu aplicación (con objetos)
@@ -38,8 +48,8 @@ export interface Servicio {
   nPersona: number;
   precio10: number;
   requisitos: string;
-  conductor?: Conductor;
-  cliente?: Cliente;
+  conductor: Conductor | null; // Hacer explícito que puede ser null
+  cliente: Cliente | null; // Hacer explícito que puede ser null
 }
 
 export type ServicioFormData = Omit<Servicio, 'id_servicio'>;

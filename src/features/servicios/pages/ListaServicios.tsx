@@ -46,60 +46,96 @@ export const ListaServicios = () => {
               />
             ) : (
               <>
-                 {/* Primera línea: información principal */}
-          <div className="flex justify-between items-center">
-            <div className="flex-1">
-              <h3 className="font-medium">
-                {servicio.origen} → {servicio.destino}
-              </h3>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              {/* Precio base */}
-              <div className="text-right">
-                <span className="block text-sm text-gray-500">Precio: </span>
-                <span className="font-bold">{(servicio.precio).toFixed(2)}€</span>
-              </div>
-              
-              {/* Precio +10% (calculado) */}
-              <div className="text-right">
-                <span className="block text-sm text-gray-500">Precio +10%: </span>
-                <span className="font-bold">{(servicio.precio * 1.10).toFixed(2)}€</span>
-              </div>
+                {/* Primera línea: información principal */}
+                <div className="flex justify-between items-center">
+                  <div className="flex-1">
+                    <h3 className="font-medium">
+                      {servicio.origen} → {servicio.destino}
+                    </h3>
+                  </div>
 
-               {/* Número de personas */}
-              <div className="text-right">
-                <span className="block text-sm text-gray-500">Número de Personas: {servicio.nPersona}</span>
-              </div>
+                  {/* Cliente */}
+                  <div className="text-right">
+                    <span className="block text-sm text-gray-500">
+                      Cliente: {servicio.cliente?.nombre || "No asignado"}
+                    </span>
+                  </div>
+                  
+                  <div>
+                    <span className="block text-sm text-gray-500">
+                      Teléfono: {servicio.cliente?.telefono || "N/A"}
+                    </span>
+                  </div>
+                  {/* Conductor */}
+                 <span className="block text-sm text-gray-500">
+                    Conductor: {servicio.conductor?.nombre || "No asignado"}
+                  </span>
 
-              {/* Requisitos */}
-              <div className="text-right">
-                <span className="block text-sm text-gray-500">Requisitos: {servicio.requisitos}</span>
-              </div>
-              
-              {/* Eurotaxi (checkbox visual) */}
-              <div className="flex items-center">
-                <span className="mr-2 text-sm text-gray-500">Eurotaxi </span>
-                <input 
-                  type="checkbox" 
-                  checked={servicio.eurotaxi || false}
-                  readOnly
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                />
-              </div>
-            </div>
-          </div>
-          
-          {/* Segunda línea: información adicional */}
-          <div className="flex justify-between mt-2 text-sm">
-            <div className="flex space-x-4">
-              {servicio.fecha && (
-                <span>Fecha: {new Date(servicio.fecha).toLocaleDateString()}</span>
-              )}
-              {servicio.hora && <span><br></br>Hora: {servicio.hora}</span>}
-              
-            </div>
-          </div>
+                  <div className="flex items-center space-x-4">
+                    {/* Precio base */}
+                    <div className="text-right">
+                      <span className="block text-sm text-gray-500">
+                        Precio:{" "}
+                      </span>
+                      <span className="font-bold">
+                        {servicio.precio.toFixed(2)}€
+                      </span>
+                    </div>
+
+                    {/* Precio +10% (calculado) */}
+                    <div className="text-right">
+                      <span className="block text-sm text-gray-500">
+                        Precio +10%:{" "}
+                      </span>
+                      <span className="font-bold">
+                        {(servicio.precio * 1.1).toFixed(2)}€
+                      </span>
+                    </div>
+
+                    {/* Número de personas */}
+                    <div className="text-right">
+                      <span className="block text-sm text-gray-500">
+                        Número de Personas: {servicio.nPersona}
+                      </span>
+                    </div>
+
+                    {/* Requisitos */}
+                    <div className="text-right">
+                      <span className="block text-sm text-gray-500">
+                        Requisitos: {servicio.requisitos}
+                      </span>
+                    </div>
+
+                    {/* Eurotaxi (checkbox visual) */}
+                    <div className="flex items-center">
+                      <span className="mr-2 text-sm text-gray-500">
+                        Eurotaxi{" "}
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={servicio.eurotaxi || false}
+                        readOnly
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Segunda línea: información adicional */}
+                <div className="flex justify-between mt-2 text-sm">
+                  <div className="flex space-x-4">
+                    {servicio.fecha && (
+                      <span>
+                        Fecha: {new Date(servicio.fecha).toLocaleDateString()}
+                      </span>
+                    )}
+                    {servicio.hora && (
+                      <span>
+                        <br></br>Hora: {servicio.hora}
+                      </span>
+                    )}
+                  </div>
+                </div>
 
                 <div className="flex justify-end space-x-2 mt-2">
                   <button

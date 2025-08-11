@@ -12,12 +12,12 @@ export const useServicios = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Cargar servicios al inicializar
+  // Cargar servicios al montar
   useEffect(() => {
     const loadServicios = async () => {
       try {
         setLoading(true);
-        const data = await fetchServicios();
+        const data = await fetchServicios(); // Ya devuelve Servicio[]
         setServicios(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -25,18 +25,16 @@ export const useServicios = () => {
         setLoading(false);
       }
     };
-    
     loadServicios();
   }, []);
 
-  // Métodos CRUD optimizados
   const addServicio = async (servicio: ServicioFormData) => {
-    const newServicio = await createServicio(servicio);
+    const newServicio = await createServicio(servicio); // Devuelve Servicio
     setServicios(prev => [newServicio, ...prev]);
   };
 
   const editServicio = async (id: number, servicio: Partial<ServicioFormData>) => {
-    const updated = await updateServicio(id, servicio);
+    const updated = await updateServicio(id, servicio); // Devuelve Servicio
     setServicios(prev => prev.map(s => 
       s.id_servicio === id ? updated : s
     ));
@@ -50,7 +48,7 @@ export const useServicios = () => {
   const refreshServicios = async () => {
     setLoading(true);
     try {
-      const data = await fetchServicios();
+      const data = await fetchServicios(); // Devuelve Servicio[]
       setServicios(data);
       setError(null);
     } catch (err) {
