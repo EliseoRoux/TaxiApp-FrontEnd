@@ -108,20 +108,39 @@ export const createServicio = async (
 ): Promise<Servicio> => {
   let clienteId = servicio.cliente?.idCliente;
 
-  if (!clienteId && servicio.cliente?.nombre && servicio.cliente.telefono) {
-    const { data: newCliente, error: clienteError } = await supabase
-      .from("cliente")
-      .insert({
-        nombre: servicio.cliente.nombre,
-        telefono: servicio.cliente.telefono
-      })
-      .select("id_cliente")
-      .single();
+  // Si no hay ID pero sí teléfono, buscar cliente existente
+  if (!clienteId && servicio.cliente?.telefono) {
+    const telefono = servicio.cliente.telefono.trim();
 
-    if (clienteError) throw new Error(clienteError.message);
-    clienteId = newCliente.id_cliente;
+    // Buscar cliente por teléfono
+    const { data: existingCliente, error: searchError } = await supabase
+      .from("cliente")
+      .select("id_cliente")
+      .eq("telefono", telefono)
+      .maybeSingle();
+
+    if (searchError) throw new Error(searchError.message);
+
+    if (existingCliente) {
+      // Cliente ya existe → usar su ID
+      clienteId = existingCliente.id_cliente;
+    } else if (servicio.cliente?.nombre) {
+      // Cliente no existe → crearlo
+      const { data: newCliente, error: clienteError } = await supabase
+        .from("cliente")
+        .insert({
+          nombre: servicio.cliente.nombre.trim(),
+          telefono
+        })
+        .select("id_cliente")
+        .single();
+
+      if (clienteError) throw new Error(clienteError.message);
+      clienteId = newCliente.id_cliente;
+    }
   }
 
+  // Crear servicio con el cliente (existente o nuevo)
   const { data, error } = await supabase
     .from("servicio")
     .insert({
@@ -156,6 +175,7 @@ export const createServicio = async (
   if (error) throw new Error(error.message);
   return transformServicio(data);
 };
+
 
 export const updateServicio = async (
   id: number,
