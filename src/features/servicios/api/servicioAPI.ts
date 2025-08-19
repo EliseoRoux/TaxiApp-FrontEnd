@@ -1,5 +1,10 @@
 import { supabase } from "../../../lib/supabaseClient";
-import type { Servicio, ServicioFormData, Conductor, Cliente } from "../types/servicio";
+import type {
+  Servicio,
+  ServicioFormData,
+  Conductor,
+  Cliente,
+} from "../types/servicio";
 
 /* -------------------- Tipos intermedios para API -------------------- */
 interface ConductorAPI {
@@ -44,13 +49,13 @@ const transformServicio = (data: ServicioAPIResponse): Servicio => {
     nombre: c.nombre,
     telefono: c.telefono,
     deuda: c.deuda ?? null,
-    dineroGenerado: c.dinero_generado ?? c.dineroGenerado ?? null
+    dineroGenerado: c.dinero_generado ?? c.dineroGenerado ?? null,
   });
 
   const mapCliente = (c: ClienteAPI): Cliente => ({
     idCliente: c.id_cliente ?? c.idCliente,
     nombre: c.nombre,
-    telefono: c.telefono
+    telefono: c.telefono,
   });
 
   return {
@@ -66,12 +71,20 @@ const transformServicio = (data: ServicioAPIResponse): Servicio => {
     requisitos: data.requisitos,
 
     conductor: Array.isArray(data.conductor)
-      ? (data.conductor[0] ? mapConductor(data.conductor[0]) : null)
-      : (data.conductor ? mapConductor(data.conductor) : null),
+      ? data.conductor[0]
+        ? mapConductor(data.conductor[0])
+        : null
+      : data.conductor
+      ? mapConductor(data.conductor)
+      : null,
 
     cliente: Array.isArray(data.cliente)
-      ? (data.cliente[0] ? mapCliente(data.cliente[0]) : null)
-      : (data.cliente ? mapCliente(data.cliente) : null)
+      ? data.cliente[0]
+        ? mapCliente(data.cliente[0])
+        : null
+      : data.cliente
+      ? mapCliente(data.cliente)
+      : null,
   };
 };
 
@@ -79,7 +92,8 @@ const transformServicio = (data: ServicioAPIResponse): Servicio => {
 export const fetchServicios = async (): Promise<Servicio[]> => {
   const { data, error } = await supabase
     .from("servicio")
-    .select(`
+    .select(
+      `
       id_servicio,
       origen,
       destino,
@@ -94,7 +108,8 @@ export const fetchServicios = async (): Promise<Servicio[]> => {
       id_cliente,
       conductor:conductor(id_conductor, nombre, telefono, deuda, dinero_generado),
       cliente:cliente(id_cliente, nombre, telefono)
-    `)
+    `
+    )
     .order("fecha", { ascending: true });
 
   if (error) throw new Error(error.message);
@@ -108,29 +123,45 @@ export const createServicio = async (
 ): Promise<Servicio> => {
   let clienteId = servicio.cliente?.idCliente;
 
-  // Si no hay ID pero sí teléfono, buscar cliente existente
+  // MEJORA: Validación de datos del cliente
+  if (
+    servicio.cliente &&
+    (!servicio.cliente.nombre || !servicio.cliente.telefono)
+  ) {
+    throw new Error("Nombre y teléfono del cliente son obligatorios");
+  }
+
+  // MEJORA: Búsqueda inteligente de cliente existente
   if (!clienteId && servicio.cliente?.telefono) {
     const telefono = servicio.cliente.telefono.trim();
 
-    // Buscar cliente por teléfono
+    // Buscar cliente por teléfono (case insensitive)
     const { data: existingCliente, error: searchError } = await supabase
       .from("cliente")
-      .select("id_cliente")
-      .eq("telefono", telefono)
+      .select("id_cliente, nombre")
+      .ilike("telefono", telefono) // ← Usar ilike para búsqueda case insensitive
       .maybeSingle();
 
     if (searchError) throw new Error(searchError.message);
 
     if (existingCliente) {
-      // Cliente ya existe → usar su ID
+      // Cliente encontrado - usar ID existente
       clienteId = existingCliente.id_cliente;
+
+      // OPCIONAL: Actualizar nombre si es diferente
+      if (existingCliente.nombre !== servicio.cliente.nombre.trim()) {
+        await supabase
+          .from("cliente")
+          .update({ nombre: servicio.cliente.nombre.trim() })
+          .eq("id_cliente", clienteId);
+      }
     } else if (servicio.cliente?.nombre) {
-      // Cliente no existe → crearlo
+      // Cliente no existe - crear nuevo
       const { data: newCliente, error: clienteError } = await supabase
         .from("cliente")
         .insert({
           nombre: servicio.cliente.nombre.trim(),
-          telefono
+          telefono: telefono,
         })
         .select("id_cliente")
         .single();
@@ -140,23 +171,28 @@ export const createServicio = async (
     }
   }
 
+  // Validación de precio y cálculo automático de precio10
+  const precio = servicio.precio || 0;
+  const precio10 = servicio.precio10 || precio * 0.1;
+
   // Crear servicio con el cliente (existente o nuevo)
   const { data, error } = await supabase
     .from("servicio")
     .insert({
       origen: servicio.origen,
       destino: servicio.destino,
-      precio: servicio.precio,
+      precio: precio,
       fecha: servicio.fecha,
       eurotaxi: servicio.eurotaxi,
       hora: servicio.hora,
       n_persona: servicio.nPersona,
-      precio_10: servicio.precio10,
+      precio_10: precio10, //  Usar el precio10 calculado
       requisitos: servicio.requisitos,
       id_conductor: servicio.conductor?.idConductor,
-      id_cliente: clienteId
+      id_cliente: clienteId,
     })
-    .select(`
+    .select(
+      `
       id_servicio,
       origen,
       destino,
@@ -169,18 +205,37 @@ export const createServicio = async (
       requisitos,
       conductor:conductor(id_conductor, nombre, telefono, deuda, dinero_generado),
       cliente:cliente(id_cliente, nombre, telefono)
-    `)
+    `
+    )
     .single();
 
   if (error) throw new Error(error.message);
   return transformServicio(data);
 };
 
-
 export const updateServicio = async (
   id: number,
   servicio: Partial<ServicioFormData>
 ): Promise<Servicio> => {
+  // Manejo de cliente para actualizaciones
+  let clienteId = servicio.cliente?.idCliente;
+
+  if (!clienteId && servicio.cliente?.telefono) {
+    const telefono = servicio.cliente.telefono.trim();
+
+    const { data: existingCliente, error: searchError } = await supabase
+      .from("cliente")
+      .select("id_cliente")
+      .ilike("telefono", telefono)
+      .maybeSingle();
+
+    if (searchError) throw new Error(searchError.message);
+
+    if (existingCliente) {
+      clienteId = existingCliente.id_cliente;
+    }
+  }
+
   const updateData = {
     origen: servicio.origen,
     destino: servicio.destino,
@@ -189,17 +244,18 @@ export const updateServicio = async (
     eurotaxi: servicio.eurotaxi,
     hora: servicio.hora,
     n_persona: servicio.nPersona,
-    precio_10: servicio.precio10,
+    precio_10: servicio.precio10 || (servicio.precio || 0) * 0.1, //  Cálculo automático
     requisitos: servicio.requisitos,
     id_conductor: servicio.conductor?.idConductor,
-    id_cliente: servicio.cliente?.idCliente
+    id_cliente: clienteId,
   };
 
   const { data, error } = await supabase
     .from("servicio")
     .update(updateData)
     .eq("id_servicio", id)
-    .select(`
+    .select(
+      `
       id_servicio,
       origen,
       destino,
@@ -212,7 +268,8 @@ export const updateServicio = async (
       requisitos,
       conductor:conductor(id_conductor, nombre, telefono, deuda, dinero_generado),
       cliente:cliente(id_cliente, nombre, telefono)
-    `)
+    `
+    )
     .single();
 
   if (error) throw new Error(error.message);
@@ -236,12 +293,12 @@ export const fetchConductores = async (): Promise<Conductor[]> => {
 
   if (error) throw new Error(error.message);
   return data
-    ? data.map(c => ({
+    ? data.map((c) => ({
         idConductor: c.id_conductor,
         nombre: c.nombre,
         telefono: c.telefono,
         deuda: c.deuda ?? null,
-        dineroGenerado: c.dinero_generado ?? null
+        dineroGenerado: c.dinero_generado ?? null,
       }))
     : [];
 };
