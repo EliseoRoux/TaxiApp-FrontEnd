@@ -2,6 +2,8 @@ export interface Conductor {
   idConductor: number;
   nombre: string;
   telefono: string;
+  deuda?: number | null;           // null si no hay valor
+  dineroGenerado?: number | null;  // null si no hay valor
 }
 
 export interface Cliente {
@@ -22,8 +24,20 @@ export interface ServicioDB {
   n_persona: number;
   precio_10: number;
   requisitos: string;
-  conductor: { id_conductor: number; nombre: string; telefono: string }[];
-  cliente: { id_cliente: number; nombre: string; telefono: string }[];
+  id_conductor: number | null;
+  id_cliente: number | null;
+  conductor: {
+    id_conductor: number;
+    nombre: string;
+    telefono: string;
+    deuda: number | null;
+    dinero_generado: number | null;
+  }[] | null;  // Array de un único conductor o null
+  cliente: {
+    id_cliente: number;
+    nombre: string;
+    telefono: string;
+  }[] | null;  // Array de un único cliente o null
 }
 
 // Versión para tu aplicación (con objetos)
@@ -38,8 +52,8 @@ export interface Servicio {
   nPersona: number;
   precio10: number;
   requisitos: string;
-  conductor?: Conductor;
-  cliente?: Cliente;
+  conductor: Conductor | null; // Puede ser null
+  cliente: Cliente | null;     // Puede ser null
 }
 
 export type ServicioFormData = Omit<Servicio, 'id_servicio'>;
