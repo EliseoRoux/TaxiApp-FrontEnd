@@ -1,14 +1,20 @@
 import { supabase } from "../../../lib/supabaseClient";
-import type { Cliente, ClienteFormData, ClienteResponse } from "../types/cliente";
+import type {
+  Cliente,
+  ClienteFormData,
+  ClienteResponse,
+} from "../types/cliente";
 
 export const fetchClientes = async (): Promise<ClienteResponse[]> => {
   try {
     console.log("🔍 Buscando clientes en Supabase...");
-    
-    // PRIMERO: Obtener solo los datos básicos de clientes 
+
+    // PRIMERO: Obtener los datos de clientes
     const { data: clientesData, error: clientesError } = await supabase
       .from("cliente")
-      .select("id_cliente, nombre, telefono, fecha_creacion, fecha_actualizacion") // ← Solo los campos que existen
+      .select(
+        "id_cliente, nombre, telefono, fecha_creacion, fecha_actualizacion"
+      )
       .order("nombre", { ascending: true });
 
     if (clientesError) {
@@ -29,34 +35,39 @@ export const fetchClientes = async (): Promise<ClienteResponse[]> => {
         try {
           const { count, error: countError } = await supabase
             .from("servicio")
-            .select("*", { count: 'exact', head: true })
+            .select("*", { count: "exact", head: true })
             .eq("id_cliente", cliente.id_cliente);
 
           if (countError) {
-            console.error(`Error contando servicios para cliente ${cliente.id_cliente}:`, countError);
+            console.error(
+              `Error contando servicios para cliente ${cliente.id_cliente}:`,
+              countError
+            );
             return { ...cliente, count: 0 };
           }
 
           return { ...cliente, count: count || 0 };
         } catch (error) {
-          console.error(`Error en count para cliente ${cliente.id_cliente}:`, error);
+          console.error(
+            `Error en count para cliente ${cliente.id_cliente}:`,
+            error
+          );
           return { ...cliente, count: 0 };
         }
       })
     );
 
-    const resultado = clientesConCount.map(cliente => ({
+    const resultado = clientesConCount.map((cliente) => ({
       idCliente: cliente.id_cliente,
       nombre: cliente.nombre,
       telefono: cliente.telefono,
       fechaCreacion: cliente.fecha_creacion,
-      fechaActualizacion: cliente.fecha_actualizacion,
-      totalServicios: cliente.count
+      fechaActualizacion: cliente.fecha_actualizacion ?? null,
+      totalServicios: cliente.count,
     }));
 
     console.log("✅ Clientes transformados:", resultado);
     return resultado;
-
   } catch (error) {
     console.error("💥 Error fatal en fetchClientes:", error);
     throw error;
@@ -64,14 +75,16 @@ export const fetchClientes = async (): Promise<ClienteResponse[]> => {
 };
 
 // ... el resto de las funciones permanecen igual
-export const createCliente = async (cliente: ClienteFormData): Promise<Cliente> => {
+export const createCliente = async (
+  cliente: ClienteFormData
+): Promise<Cliente> => {
   console.log("➕ Creando cliente:", cliente);
-  
+
   const { data, error } = await supabase
     .from("cliente")
     .insert({
       nombre: cliente.nombre.trim(),
-      telefono: cliente.telefono.trim()
+      telefono: cliente.telefono.trim(),
     })
     .select("id_cliente, nombre, telefono")
     .single();
@@ -85,16 +98,19 @@ export const createCliente = async (cliente: ClienteFormData): Promise<Cliente> 
   return {
     idCliente: data.id_cliente,
     nombre: data.nombre,
-    telefono: data.telefono
+    telefono: data.telefono,
   };
 };
 
-export const updateCliente = async (id: number, cliente: ClienteFormData): Promise<Cliente> => {
+export const updateCliente = async (
+  id: number,
+  cliente: ClienteFormData
+): Promise<Cliente> => {
   const { data, error } = await supabase
     .from("cliente")
     .update({
       nombre: cliente.nombre.trim(),
-      telefono: cliente.telefono.trim()
+      telefono: cliente.telefono.trim(),
     })
     .eq("id_cliente", id)
     .select("id_cliente, nombre, telefono")
@@ -104,7 +120,7 @@ export const updateCliente = async (id: number, cliente: ClienteFormData): Promi
   return {
     idCliente: data.id_cliente,
     nombre: data.nombre,
-    telefono: data.telefono
+    telefono: data.telefono,
   };
 };
 
@@ -125,9 +141,11 @@ export const searchClientes = async (query: string): Promise<Cliente[]> => {
     .limit(10);
 
   if (error) throw new Error(error.message);
-  return data?.map(cliente => ({
-    idCliente: cliente.id_cliente,
-    nombre: cliente.nombre,
-    telefono: cliente.telefono
-  })) || [];
+  return (
+    data?.map((cliente) => ({
+      idCliente: cliente.id_cliente,
+      nombre: cliente.nombre,
+      telefono: cliente.telefono,
+    })) || []
+  );
 };

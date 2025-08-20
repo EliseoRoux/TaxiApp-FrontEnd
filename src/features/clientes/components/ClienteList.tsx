@@ -69,7 +69,9 @@ export const ClienteList = ({ clientes, onEdit, onDelete, loading }: Props) => {
                 {new Date(cliente.fechaCreacion).toLocaleDateString()}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {new Date(cliente.fechaActualizacion).toLocaleDateString()}
+                {cliente.fechaActualizacion
+                  ? new Date(cliente.fechaActualizacion).toLocaleDateString()
+                  : "No actualizado"}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <button
