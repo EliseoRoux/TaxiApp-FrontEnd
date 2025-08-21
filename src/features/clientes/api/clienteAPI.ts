@@ -5,6 +5,15 @@ import type {
   ClienteResponse,
 } from "../types/cliente";
 
+// Define types for the raw data from Supabase
+interface ClienteRawData {
+  id_cliente: number;
+  nombre: string;
+  telefono: string;
+  fecha_creacion: string;
+  fecha_actualizacion: string | null;
+}
+
 export const fetchClientes = async (): Promise<ClienteResponse[]> => {
   try {
     console.log("🔍 Buscando clientes en Supabase...");
@@ -29,30 +38,56 @@ export const fetchClientes = async (): Promise<ClienteResponse[]> => {
       return [];
     }
 
-    // SEGUNDO: Obtener el count de servicios para cada cliente
+    // SEGUNDO: Obtener el count de servicios Y reservas para cada cliente
     const clientesConCount = await Promise.all(
-      clientesData.map(async (cliente) => {
+      clientesData.map(async (cliente: ClienteRawData) => {
         try {
-          const { count, error: countError } = await supabase
+          // Contar servicios
+          const { count: serviciosCount, error: serviciosError } = await supabase
             .from("servicio")
             .select("*", { count: "exact", head: true })
             .eq("id_cliente", cliente.id_cliente);
 
-          if (countError) {
+          if (serviciosError) {
             console.error(
               `Error contando servicios para cliente ${cliente.id_cliente}:`,
-              countError
+              serviciosError
             );
-            return { ...cliente, count: 0 };
           }
 
-          return { ...cliente, count: count || 0 };
+          // Contar reservas
+          const { count: reservasCount, error: reservasError } = await supabase
+            .from("reserva")
+            .select("*", { count: "exact", head: true })
+            .eq("id_cliente", cliente.id_cliente);
+
+          if (reservasError) {
+            console.error(
+              `Error contando reservas para cliente ${cliente.id_cliente}:`,
+              reservasError
+            );
+          }
+
+          // Sumar servicios + reservas
+          const total = (serviciosCount || 0) + (reservasCount || 0);
+          
+          return { 
+            ...cliente, 
+            serviciosCount: serviciosCount || 0,
+            reservasCount: reservasCount || 0,
+            total
+          };
         } catch (error) {
           console.error(
             `Error en count para cliente ${cliente.id_cliente}:`,
             error
           );
-          return { ...cliente, count: 0 };
+          return { 
+            ...cliente, 
+            serviciosCount: 0,
+            reservasCount: 0,
+            total: 0
+          };
         }
       })
     );
@@ -63,7 +98,9 @@ export const fetchClientes = async (): Promise<ClienteResponse[]> => {
       telefono: cliente.telefono,
       fechaCreacion: cliente.fecha_creacion,
       fechaActualizacion: cliente.fecha_actualizacion ?? null,
-      totalServicios: cliente.count,
+      totalServicios: cliente.total,
+      serviciosCount: cliente.serviciosCount,
+      reservasCount: cliente.reservasCount,
     }));
 
     console.log("✅ Clientes transformados:", resultado);
@@ -74,7 +111,6 @@ export const fetchClientes = async (): Promise<ClienteResponse[]> => {
   }
 };
 
-// ... el resto de las funciones permanecen igual
 export const createCliente = async (
   cliente: ClienteFormData
 ): Promise<Cliente> => {
@@ -141,11 +177,13 @@ export const searchClientes = async (query: string): Promise<Cliente[]> => {
     .limit(10);
 
   if (error) throw new Error(error.message);
-  return (
-    data?.map((cliente) => ({
-      idCliente: cliente.id_cliente,
-      nombre: cliente.nombre,
-      telefono: cliente.telefono,
-    })) || []
-  );
+  
+  return data.map((cliente) => ({
+    idCliente: cliente.id_cliente,
+    nombre: cliente.nombre,
+    telefono: cliente.telefono,
+  }));
 };
+
+// REMOVE the duplicate export block at the end
+// The functions are already exported individually above

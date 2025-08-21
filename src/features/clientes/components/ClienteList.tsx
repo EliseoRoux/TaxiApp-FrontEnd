@@ -61,7 +61,10 @@ export const ClienteList = ({ clientes, onEdit, onDelete, loading }: Props) => {
                 <div className="text-sm text-gray-500">{cliente.telefono}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                <span
+                  className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                  title={`Servicios: ${cliente.serviciosCount}, Reservas: ${cliente.reservasCount}`}
+                >
                   {cliente.totalServicios}
                 </span>
               </td>

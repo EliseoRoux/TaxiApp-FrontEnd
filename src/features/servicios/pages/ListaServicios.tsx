@@ -46,7 +46,7 @@ export const ListaServicios = () => {
               />
             ) : (
               <>
-                {/* Primera línea: información principal */}
+                {/* Información principal */}
                 <div className="flex justify-between items-center">
                   <div className="flex-1">
                     <h3 className="font-medium">
@@ -85,7 +85,7 @@ export const ListaServicios = () => {
                     {/* Precio +10% (calculado) */}
                     <div className="text-right">
                       <span className="block text-sm text-gray-500">
-                        Precio +10%:{" "}
+                        Precio 10%:{" "}
                       </span>
                       <span className="font-bold">
                         {(servicio.precio * 0.1).toFixed(2)}€
@@ -95,7 +95,7 @@ export const ListaServicios = () => {
                     {/* Número de personas */}
                     <div className="text-right">
                       <span className="block text-sm text-gray-500">
-                        Número de Personas: {servicio.nPersona}
+                        Personas: {servicio.nPersona}
                       </span>
                     </div>
 
@@ -121,7 +121,6 @@ export const ListaServicios = () => {
                   </div>
                 </div>
 
-                {/* Segunda línea: información adicional */}
                 <div className="flex justify-between mt-2 text-sm">
                   <div className="flex space-x-4">
                     {servicio.fecha && (
