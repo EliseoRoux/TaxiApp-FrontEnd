@@ -3,7 +3,8 @@ import {
   fetchConductores, 
   createConductor, 
   updateConductor, 
-  deleteConductor 
+  deleteConductor ,
+  pagarDeuda
 } from '../api/conductorAPI';
 import type { ConductorFormData, ConductorResponse } from '../types/conductor';
 
@@ -15,6 +16,11 @@ export const useConductores = () => {
   useEffect(() => {
     loadConductores();
   }, []);
+
+   const payDeuda = async (id: number) => {
+    await pagarDeuda(id);
+    await loadConductores();
+  };
 
   const loadConductores = async () => {
     try {
@@ -52,6 +58,7 @@ export const useConductores = () => {
     addConductor,
     editConductor,
     removeConductor,
+    payDeuda,
     refresh: loadConductores
   };
 };

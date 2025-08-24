@@ -37,3 +37,16 @@ export const deleteConductor = async (id: number): Promise<void> => {
   
   if (!response.ok) throw new Error('Error al eliminar conductor');
 };
+
+export const pagarDeuda = async (id: number): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/${id}/pagar-deuda`, {
+    method: 'PUT'
+  });
+  if (!response.ok) throw new Error('Error al pagar deuda');
+};
+
+export const getConductoresConDeuda = async (): Promise<ConductorResponse[]> => {
+  const response = await fetch(`${API_BASE_URL}/deudas`);
+  if (!response.ok) throw new Error('Error al obtener conductores con deuda');
+  return response.json();
+};

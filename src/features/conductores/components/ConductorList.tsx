@@ -4,10 +4,17 @@ type Props = {
   conductores: ConductorResponse[];
   onEdit: (conductor: ConductorResponse) => void;
   onDelete: (id: number) => void;
+  onPay: (id: number) => void;
   loading?: boolean;
 };
 
-export const ConductorList = ({ conductores, onEdit, onDelete, loading }: Props) => {
+export const ConductorList = ({
+  conductores,
+  onEdit,
+  onDelete,
+  onPay,
+  loading,
+}: Props) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -55,12 +62,18 @@ export const ConductorList = ({ conductores, onEdit, onDelete, loading }: Props)
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-500">{conductor.telefono}</div>
+                <div className="text-sm text-gray-500">
+                  {conductor.telefono}
+                </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                  conductor.deuda > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                }`}>
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    conductor.deuda > 0
+                      ? "bg-red-100 text-red-800"
+                      : "bg-green-100 text-green-800"
+                  }`}
+                >
                   ${conductor.deuda.toFixed(2)}
                 </span>
               </td>
@@ -76,6 +89,14 @@ export const ConductorList = ({ conductores, onEdit, onDelete, loading }: Props)
                 >
                   Editar
                 </button>
+                <button
+                  onClick={() => onPay(conductor.idConductor)}
+                  className="text-green-600 hover:text-green-900 mr-3"
+                  disabled={conductor.deuda <= 0}
+                >
+                  Pagada
+                </button>
+
                 <button
                   onClick={() => onDelete(conductor.idConductor)}
                   className="text-red-600 hover:text-red-900"
