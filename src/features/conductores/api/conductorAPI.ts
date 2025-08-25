@@ -50,3 +50,9 @@ export const getConductoresConDeuda = async (): Promise<ConductorResponse[]> => 
   if (!response.ok) throw new Error('Error al obtener conductores con deuda');
   return response.json();
 };
+
+export const getConductoresSinDeuda = async (): Promise<ConductorResponse[]> => {
+  const response = await fetch(`${API_BASE_URL}/no-deuda`);
+  if (!response.ok) throw new Error('Error al obtener conductores sin deuda');
+  return response.json();
+};
