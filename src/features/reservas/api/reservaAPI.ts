@@ -57,8 +57,8 @@ const transformReserva = (data: ReservaAPIResponse): Reserva => {
       ? mapConductor(data.conductor[0])
       : null
     : data.conductor
-    ? mapConductor(data.conductor)
-    : null;
+      ? mapConductor(data.conductor)
+      : null;
 
   // Manejar cliente (puede ser array u objeto)
   const cliente = Array.isArray(data.cliente)
@@ -66,8 +66,8 @@ const transformReserva = (data: ReservaAPIResponse): Reserva => {
       ? mapCliente(data.cliente[0])
       : null
     : data.cliente
-    ? mapCliente(data.cliente)
-    : null;
+      ? mapCliente(data.cliente)
+      : null;
 
   return {
     idReserva: data.id_reserva ?? data.idReserva ?? 0,
@@ -232,4 +232,46 @@ export const deleteReserva = async (id: number): Promise<void> => {
     .eq("id_reserva", id);
 
   if (error) throw new Error(error.message);
+};
+
+export const fetchReservasFiltradas = async (
+  idConductor?: number,
+  fechaInicio?: string,
+  fechaFin?: string
+): Promise<Reserva[]> => {
+  let query = supabase
+    .from("reserva")
+    .select(`
+      id_reserva,
+      origen,
+      destino,
+      n_persona,
+      fecha_reserva,
+      hora,
+      eurotaxi,
+      requisitos,
+      precio,
+      precio_10,
+      conductor:conductor(id_conductor, nombre, telefono, deuda, dinero_generado),
+      cliente:cliente(id_cliente, nombre, telefono)
+    `);
+
+  // Filtro por conductor
+  if (idConductor) {
+    query = query.eq("id_conductor", idConductor);
+  }
+
+  // Filtros de fecha
+  if (fechaInicio) {
+    query = query.gte("fecha_reserva", fechaInicio);
+  }
+  if (fechaFin) {
+    query = query.lte("fecha_reserva", fechaFin);
+  }
+
+  query = query.order("fecha_reserva", { ascending: true });
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return data ? data.map(transformReserva) : [];
 };

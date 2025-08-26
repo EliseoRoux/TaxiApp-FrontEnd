@@ -8,13 +8,15 @@ export const useServiciosPorConductor = () => {
   const [error, setError] = useState<string | null>(null);
 
   const load = async (idConductor: number, fechaInicio?: string, fechaFin?: string) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
       const data = await fetchServiciosPorConductor(idConductor, fechaInicio, fechaFin);
       setServicios(data);
+      return data; 
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error desconocido");
+      return [];
     } finally {
       setLoading(false);
     }

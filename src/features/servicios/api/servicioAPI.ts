@@ -303,7 +303,6 @@ export const fetchConductores = async (): Promise<Conductor[]> => {
     : [];
 };
 
-// servicioAPI.ts - Reemplazar la función existente
 export const fetchServiciosPorConductor = async (
   idConductor: number,
   fechaInicio?: string,
