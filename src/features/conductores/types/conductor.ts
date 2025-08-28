@@ -4,6 +4,9 @@ export interface Conductor {
   telefono: string;
   deuda: number;
   dineroGenerado: number;
+  asiento: number;
+  sillaBebe: number;
+  eurotaxi: boolean;
 }
 
 export type ConductorFormData = Omit<Conductor, 'idConductor'>;
@@ -14,4 +17,7 @@ export interface ConductorResponse {
   telefono: string;
   deuda: number;
   dineroGenerado: number;
+  asiento: number;
+  sillaBebe: number;
+  eurotaxi: boolean;
 }

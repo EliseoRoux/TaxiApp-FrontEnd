@@ -49,6 +49,15 @@ export const ConductorList = ({
               Dinero Generado
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Asientos
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Sillas Bebé
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Eurotaxi
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Acciones
             </th>
           </tr>
@@ -81,6 +90,17 @@ export const ConductorList = ({
                 <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
                   ${conductor.dineroGenerado.toFixed(2)}
                 </span>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                {conductor.asiento}
+              </td>
+
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                {conductor.sillaBebe}
+              </td>
+
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                {conductor.eurotaxi ? "Sí" : "No"}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <button
