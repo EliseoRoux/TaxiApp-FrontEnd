@@ -60,14 +60,14 @@ export const ListaServicios = () => {
                       Cliente: {servicio.cliente?.nombre || "No asignado"}
                     </span>
                   </div>
-                  
+
                   <div>
                     <span className="block text-sm text-gray-500">
                       Teléfono: {servicio.cliente?.telefono || "N/A"}
                     </span>
                   </div>
                   {/* Conductor */}
-                 <span className="block text-sm text-gray-500">
+                  <span className="block text-sm text-gray-500">
                     Conductor: {servicio.conductor?.nombre || "No asignado"}
                   </span>
 
@@ -114,6 +114,43 @@ export const ListaServicios = () => {
                       <input
                         type="checkbox"
                         checked={servicio.eurotaxi || false}
+                        readOnly
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    {/* Mascota */}
+                    <div className="flex items-center">
+                      <span className="mr-1 text-sm text-gray-500">
+                        Mascota
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={servicio.mascota || false}
+                        readOnly
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    {/* Silla */}
+                    <div className="flex items-center">
+                      <span className="mr-1 text-sm text-gray-500">Silla de bebé</span>
+                      <input
+                        type="checkbox"
+                        checked={servicio.silla || false}
+                        readOnly
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    {/* Viaje Largo */}
+                    <div className="flex items-center">
+                      <span className="mr-1 text-sm text-gray-500">
+                        Viaje fuera de Madrid
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={servicio.viajeLargo || false}
                         readOnly
                         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />

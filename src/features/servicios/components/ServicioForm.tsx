@@ -19,7 +19,7 @@ export const ServicioForm = ({ initialData, onSubmit, onCancel }: Props) => {
     handleSubmit,
     formState: { errors },
     watch,
-    setValue, 
+    setValue,
   } = useForm<ServicioFormData>({
     defaultValues: {
       ...initialData,
@@ -31,6 +31,10 @@ export const ServicioForm = ({ initialData, onSubmit, onCancel }: Props) => {
           minute: "2-digit",
         }),
       eurotaxi: initialData?.eurotaxi || false,
+      mascota: initialData?.mascota || false,
+      silla: initialData?.silla || false,
+      viajeLargo: initialData?.viajeLargo || false,
+      precio: initialData?.precio || 0,
       precio10: initialData?.precio
         ? Number((initialData.precio * 0.1).toFixed(2))
         : undefined,
@@ -241,6 +245,45 @@ export const ServicioForm = ({ initialData, onSubmit, onCancel }: Props) => {
         />
         <label htmlFor="eurotaxi" className="ml-2 block text-sm font-medium">
           Eurotaxi
+        </label>
+      </div>
+
+      {/* Mascota */}
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="mascota"
+          {...register("mascota")}
+          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        />
+        <label htmlFor="mascota" className="ml-2 block text-sm font-medium">
+          Mascota
+        </label>
+      </div>
+
+      {/* Silla */}
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="silla"
+          {...register("silla")}
+          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        />
+        <label htmlFor="silla" className="ml-2 block text-sm font-medium">
+          Silla de bebé
+        </label>
+      </div>
+
+      {/* Viaje Largo */}
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="viajeLargo"
+          {...register("viajeLargo")}
+          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        />
+        <label htmlFor="viajeLargo" className="ml-2 block text-sm font-medium">
+          Viaje fuera de Madrid
         </label>
       </div>
 

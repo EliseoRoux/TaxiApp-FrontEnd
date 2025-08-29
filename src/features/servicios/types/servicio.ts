@@ -38,9 +38,12 @@ export interface ServicioDB {
     nombre: string;
     telefono: string;
   }[] | null;  // Array de un único cliente o null
+  mascota: boolean;
+  silla: boolean;
+  viaje_largo: boolean;
 }
 
-// Versión para tu aplicación (con objetos)
+// Versión para la aplicación (con objetos)
 export interface Servicio {
   id_servicio: number;
   origen: string;
@@ -54,6 +57,9 @@ export interface Servicio {
   requisitos: string;
   conductor: Conductor | null; // Puede ser null
   cliente: Cliente | null;     // Puede ser null
+  mascota: boolean;
+  silla: boolean;
+  viajeLargo: boolean;
 }
 
 export type ServicioFormData = Omit<Servicio, 'id_servicio'>;

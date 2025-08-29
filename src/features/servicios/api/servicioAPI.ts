@@ -38,6 +38,9 @@ interface ServicioAPIResponse {
   precio_10?: number;
   precio10?: number;
   requisitos: string;
+  mascota?: boolean;
+  silla?: boolean;
+  viaje_largo?: boolean;
   conductor?: ConductorAPI | ConductorAPI[] | null;
   cliente?: ClienteAPI | ClienteAPI[] | null;
 }
@@ -69,22 +72,25 @@ const transformServicio = (data: ServicioAPIResponse): Servicio => {
     nPersona: data.n_persona ?? data.nPersona ?? 0,
     precio10: data.precio_10 ?? data.precio10 ?? 0,
     requisitos: data.requisitos,
+    mascota: data.mascota ?? false,
+    silla: data.silla ?? false,
+    viajeLargo: data.viaje_largo ?? false,
 
     conductor: Array.isArray(data.conductor)
       ? data.conductor[0]
         ? mapConductor(data.conductor[0])
         : null
       : data.conductor
-        ? mapConductor(data.conductor)
-        : null,
+      ? mapConductor(data.conductor)
+      : null,
 
     cliente: Array.isArray(data.cliente)
       ? data.cliente[0]
         ? mapCliente(data.cliente[0])
         : null
       : data.cliente
-        ? mapCliente(data.cliente)
-        : null,
+      ? mapCliente(data.cliente)
+      : null,
   };
 };
 
@@ -100,6 +106,9 @@ export const fetchServicios = async (): Promise<Servicio[]> => {
       precio,
       fecha,
       eurotaxi,
+      mascota,
+      silla,
+      viaje_largo,
       hora,
       n_persona,
       precio_10,
@@ -184,6 +193,9 @@ export const createServicio = async (
       precio: precio,
       fecha: servicio.fecha,
       eurotaxi: servicio.eurotaxi,
+      mascota: servicio.mascota || false,
+      silla: servicio.silla || false,
+      viaje_largo: servicio.viajeLargo || false,
       hora: servicio.hora,
       n_persona: servicio.nPersona,
       precio_10: precio10, //  Usar el precio10 calculado
@@ -199,6 +211,9 @@ export const createServicio = async (
       precio,
       fecha,
       eurotaxi,
+      mascota,
+      silla,
+      viaje_largo,
       hora,
       n_persona,
       precio_10,
@@ -242,6 +257,9 @@ export const updateServicio = async (
     precio: servicio.precio,
     fecha: servicio.fecha,
     eurotaxi: servicio.eurotaxi,
+    mascota: servicio.mascota,
+    silla: servicio.silla,
+    viaje_largo: servicio.viajeLargo,
     hora: servicio.hora,
     n_persona: servicio.nPersona,
     precio_10: servicio.precio10 || (servicio.precio || 0) * 0.1, //  Cálculo automático
@@ -262,6 +280,9 @@ export const updateServicio = async (
       precio,
       fecha,
       eurotaxi,
+      mascota,
+      silla,
+      viaje_largo,
       hora,
       n_persona,
       precio_10,
@@ -294,12 +315,12 @@ export const fetchConductores = async (): Promise<Conductor[]> => {
   if (error) throw new Error(error.message);
   return data
     ? data.map((c) => ({
-      idConductor: c.id_conductor,
-      nombre: c.nombre,
-      telefono: c.telefono,
-      deuda: c.deuda ?? null,
-      dineroGenerado: c.dinero_generado ?? null,
-    }))
+        idConductor: c.id_conductor,
+        nombre: c.nombre,
+        telefono: c.telefono,
+        deuda: c.deuda ?? null,
+        dineroGenerado: c.dinero_generado ?? null,
+      }))
     : [];
 };
 
@@ -310,13 +331,17 @@ export const fetchServiciosPorConductor = async (
 ): Promise<Servicio[]> => {
   let query = supabase
     .from("servicio")
-    .select(`
+    .select(
+      `
       id_servicio,
       origen,
       destino,
       precio,
       fecha,
       eurotaxi,
+      mascota,
+      silla,
+      viaje_largo,
       hora,
       n_persona,
       precio_10,
@@ -325,7 +350,8 @@ export const fetchServiciosPorConductor = async (
       id_cliente,
       conductor:conductor(id_conductor, nombre, telefono, deuda, dinero_generado),
       cliente:cliente(id_cliente, nombre, telefono)
-    `)
+    `
+    )
     .eq("id_conductor", idConductor);
 
   // Aplicar filtros de fecha si están presentes
@@ -347,3 +373,45 @@ export const fetchServiciosPorConductor = async (
   return data.map(transformServicio);
 };
 
+export const fetchServiciosPorFechas = async (
+  fechaInicio?: string,
+  fechaFin?: string
+): Promise<Servicio[]> => {
+  let query = supabase.from("servicio").select(`
+      id_servicio,
+      origen,
+      destino,
+      precio,
+      fecha,
+      eurotaxi,
+      mascota,
+      silla,
+      viaje_largo,
+      hora,
+      n_persona,
+      precio_10,
+      requisitos,
+      id_conductor,
+      id_cliente,
+      conductor:conductor(id_conductor, nombre, telefono, deuda, dinero_generado),
+      cliente:cliente(id_cliente, nombre, telefono)
+    `);
+
+  // Aplicar filtros de fecha si están presentes
+  if (fechaInicio) {
+    query = query.gte("fecha", fechaInicio);
+  }
+  if (fechaFin) {
+    query = query.lte("fecha", fechaFin);
+  }
+
+  // Ordenar por fecha
+  query = query.order("fecha", { ascending: true });
+
+  const { data, error } = await query;
+
+  if (error) throw new Error(error.message);
+  if (!data) return [];
+
+  return data.map(transformServicio);
+};
