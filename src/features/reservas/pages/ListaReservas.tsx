@@ -98,6 +98,7 @@ export const ListaReservas = () => {
                       <span className="font-bold">{reserva.nPersona}</span>
                     </div>
 
+                    {/* Eurotaxi */}
                     <div className="flex items-center">
                       <span className="mr-2 text-sm text-gray-500">
                         Eurotaxi{" "}
@@ -109,13 +110,52 @@ export const ListaReservas = () => {
                         className="h-4 w-4 rounded border-gray-300 text-indigo-600"
                       />
                     </div>
-                  </div>
 
-                  <div className="text-right">
-                    <span className="block text-sm text-gray-500">
-                      Requisitos: {reserva.requisitos}
-                    </span>
+                    {/* Mascota */}
+                    <div className="flex items-center">
+                      <span className="mr-1 text-sm text-gray-500">
+                        Mascota
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={reserva.mascota || false}
+                        readOnly
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    {/* Silla */}
+                    <div className="flex items-center">
+                      <span className="mr-1 text-sm text-gray-500">
+                        Silla de bebé
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={reserva.silla || false}
+                        readOnly
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    {/* Viaje Largo */}
+                    <div className="flex items-center">
+                      <span className="mr-1 text-sm text-gray-500">
+                        Viaje fuera de Madrid
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={reserva.viajeLargo || false}
+                        readOnly
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </div>
                   </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="block text-sm text-gray-500">
+                    Requisitos: {reserva.requisitos}
+                  </span>
                 </div>
 
                 <div className="flex justify-end space-x-2 mt-2">

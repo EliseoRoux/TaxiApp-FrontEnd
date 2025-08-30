@@ -25,6 +25,9 @@ export interface Reserva {
   precio10: number;
   conductor: Conductor | null;
   cliente: Cliente | null;
+  mascota: boolean;
+  silla: boolean;
+  viajeLargo: boolean;
 }
 
 export type ReservaFormData = Omit<Reserva, 'idReserva'>;

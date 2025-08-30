@@ -217,6 +217,57 @@ export const FiltroServiciosPorConductor = () => {
                                 <p className="text-sm">
                                   {servicio.nPersona} personas
                                 </p>
+                                {/* Eurotaxi (checkbox visual) */}
+                                <div className="flex items-center">
+                                  <span className="mr-2 text-sm text-gray-500">
+                                    Eurotaxi{" "}
+                                  </span>
+                                  <input
+                                    type="checkbox"
+                                    checked={servicio.eurotaxi || false}
+                                    readOnly
+                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                  />
+                                </div>
+
+                                {/* Mascota */}
+                                <div className="flex items-center">
+                                  <span className="mr-1 text-sm text-gray-500">
+                                    Mascota
+                                  </span>
+                                  <input
+                                    type="checkbox"
+                                    checked={servicio.mascota || false}
+                                    readOnly
+                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                  />
+                                </div>
+
+                                {/* Silla */}
+                                <div className="flex items-center">
+                                  <span className="mr-1 text-sm text-gray-500">
+                                    Silla de bebé
+                                  </span>
+                                  <input
+                                    type="checkbox"
+                                    checked={servicio.silla || false}
+                                    readOnly
+                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                  />
+                                </div>
+
+                                {/* Viaje Largo */}
+                                <div className="flex items-center">
+                                  <span className="mr-1 text-sm text-gray-500">
+                                    Viaje fuera de Madrid
+                                  </span>
+                                  <input
+                                    type="checkbox"
+                                    checked={servicio.viajeLargo || false}
+                                    readOnly
+                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                  />
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -240,18 +291,79 @@ export const FiltroServiciosPorConductor = () => {
                         {servicio.origen} → {servicio.destino}
                       </h4>
                       <p className="text-sm text-gray-600">
-                        {servicio.fecha} {servicio.hora}
+                        Fecha: {servicio.fecha} <br />
+                        Hora: {servicio.hora}
                       </p>
                       <p className="text-sm">
                         Cliente: {servicio.cliente?.nombre || "No asignado"}
                       </p>
+                      <p className="text-sm">
+                        Telefono Cliente:{" "}
+                        {servicio.cliente?.telefono || "No asignado"}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold">{servicio.precio.toFixed(2)}€</p>
+                      <p className="font-bold">
+                        Precio:{servicio.precio.toFixed(2)}€
+                      </p>
                       <p className="text-sm">
-                        10%: {(servicio.precio10 || 0).toFixed(2)}€
+                        Precio 10%: {(servicio.precio10 || 0).toFixed(2)}€
                       </p>
                       <p className="text-sm">{servicio.nPersona} personas</p>
+                      <p className="text-sm">
+                        Requisitos: {servicio.requisitos}
+                      </p>
+                      {/* Eurotaxi (checkbox visual) */}
+                      <div className="flex items-center">
+                        <span className="mr-2 text-sm text-gray-500">
+                          Eurotaxi{" "}
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={servicio.eurotaxi || false}
+                          readOnly
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      {/* Mascota */}
+                      <div className="flex items-center">
+                        <span className="mr-1 text-sm text-gray-500">
+                          Mascota
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={servicio.mascota || false}
+                          readOnly
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      {/* Silla */}
+                      <div className="flex items-center">
+                        <span className="mr-1 text-sm text-gray-500">
+                          Silla de bebé
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={servicio.silla || false}
+                          readOnly
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      {/* Viaje Largo */}
+                      <div className="flex items-center">
+                        <span className="mr-1 text-sm text-gray-500">
+                          Viaje fuera de Madrid
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={servicio.viajeLargo || false}
+                          readOnly
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

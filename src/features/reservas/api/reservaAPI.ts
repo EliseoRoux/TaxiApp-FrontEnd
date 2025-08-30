@@ -12,6 +12,9 @@ interface ReservaAPIResponse {
   fechaReserva?: string;
   hora: string;
   eurotaxi: boolean;
+  mascota: boolean;
+  silla: boolean;
+  viaje_largo: boolean;
   requisitos: string;
   precio: number;
   precio_10?: number;
@@ -77,6 +80,9 @@ const transformReserva = (data: ReservaAPIResponse): Reserva => {
     fechaReserva: data.fecha_reserva ?? data.fechaReserva ?? '',
     hora: data.hora,
     eurotaxi: data.eurotaxi,
+    mascota: data.mascota,
+    silla: data.silla,
+    viajeLargo: data.viaje_largo,
     requisitos: data.requisitos,
     precio: data.precio,
     precio10: data.precio_10 ?? data.precio10 ?? 0,
@@ -85,7 +91,6 @@ const transformReserva = (data: ReservaAPIResponse): Reserva => {
   };
 };
 
-// Resto del código se mantiene igual...
 export const fetchReservas = async (): Promise<Reserva[]> => {
   const { data, error } = await supabase
     .from("reserva")
@@ -97,6 +102,9 @@ export const fetchReservas = async (): Promise<Reserva[]> => {
       fecha_reserva,
       hora,
       eurotaxi,
+      mascota,
+      silla,
+      viaje_largo,
       requisitos,
       precio,
       precio_10,
@@ -148,7 +156,10 @@ export const createReserva = async (reserva: ReservaFormData): Promise<Reserva> 
       n_persona: reserva.nPersona,
       fecha_reserva: reserva.fechaReserva,
       hora: reserva.hora,
-      eurotaxi: reserva.eurotaxi,
+      eurotaxi: reserva.eurotaxi || false,
+      mascota: reserva.mascota ||false,
+      silla: reserva.silla ||false,
+      viaje_largo: reserva.viajeLargo ||false,
       requisitos: reserva.requisitos,
       precio: reserva.precio,
       precio_10: reserva.precio10,
@@ -163,6 +174,9 @@ export const createReserva = async (reserva: ReservaFormData): Promise<Reserva> 
       fecha_reserva,
       hora,
       eurotaxi,
+      mascota,
+      silla,
+      viaje_largo,
       requisitos,
       precio,
       precio_10,
@@ -194,6 +208,9 @@ export const updateReserva = async (id: number, reserva: Partial<ReservaFormData
     fecha_reserva: reserva.fechaReserva,
     hora: reserva.hora,
     eurotaxi: reserva.eurotaxi,
+    mascota: reserva.mascota,
+    silla: reserva.silla,
+    viaje_largo: reserva.viajeLargo,
     requisitos: reserva.requisitos,
     precio: reserva.precio,
     precio_10: reserva.precio10,
@@ -213,6 +230,9 @@ export const updateReserva = async (id: number, reserva: Partial<ReservaFormData
       fecha_reserva,
       hora,
       eurotaxi,
+      mascota,
+      silla,
+      viaje_largo,
       requisitos,
       precio,
       precio_10,
@@ -249,6 +269,9 @@ export const fetchReservasFiltradas = async (
       fecha_reserva,
       hora,
       eurotaxi,
+      mascota,
+      silla,
+      viaje_largo,
       requisitos,
       precio,
       precio_10,

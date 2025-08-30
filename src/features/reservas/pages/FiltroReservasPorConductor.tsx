@@ -1,19 +1,24 @@
 import { useState } from "react";
 import { useConductores } from "../hooks/useConductores";
 import { useReservasFiltradas } from "../hooks/useReservasPorConductor";
-import type { Conductor } from "../types/reserva"; // ya tienes en tu types
+import type { Conductor } from "../types/reserva";
 import type { Reserva } from "../types/reserva";
 
 export const FiltroReservasPorConductor = () => {
   const { conductores, loading: loadingConductores } = useConductores();
   const { reservas, loading, error, load } = useReservasFiltradas();
 
-  const [conductorSeleccionado, setConductorSeleccionado] = useState<Conductor | null>(null);
+  const [conductorSeleccionado, setConductorSeleccionado] =
+    useState<Conductor | null>(null);
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
 
   const handleFiltrar = () => {
-    load(conductorSeleccionado?.idConductor, fechaInicio || undefined, fechaFin || undefined);
+    load(
+      conductorSeleccionado?.idConductor,
+      fechaInicio || undefined,
+      fechaFin || undefined
+    );
   };
 
   return (
@@ -29,7 +34,9 @@ export const FiltroReservasPorConductor = () => {
               value={conductorSeleccionado?.idConductor || ""}
               onChange={(e) => {
                 const id = parseInt(e.target.value);
-                const conductor = conductores.find((c: Conductor) => c.idConductor === id) || null;
+                const conductor =
+                  conductores.find((c: Conductor) => c.idConductor === id) ||
+                  null;
                 setConductorSeleccionado(conductor);
               }}
               className="w-full p-2 border rounded"
@@ -45,7 +52,9 @@ export const FiltroReservasPorConductor = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Fecha Inicio</label>
+            <label className="block text-sm font-medium mb-1">
+              Fecha Inicio
+            </label>
             <input
               type="date"
               value={fechaInicio}
@@ -98,6 +107,54 @@ export const FiltroReservasPorConductor = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-bold">{r.precio.toFixed(2)}€</p>
+                </div>
+
+                {/* Eurotaxi */}
+                <div className="flex items-center">
+                  <span className="mr-2 text-sm text-gray-500">Eurotaxi </span>
+                  <input
+                    type="checkbox"
+                    checked={r.eurotaxi}
+                    readOnly
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                  />
+                </div>
+
+                {/* Mascota */}
+                <div className="flex items-center">
+                  <span className="mr-1 text-sm text-gray-500">Mascota</span>
+                  <input
+                    type="checkbox"
+                    checked={r.mascota || false}
+                    readOnly
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                </div>
+
+                {/* Silla */}
+                <div className="flex items-center">
+                  <span className="mr-1 text-sm text-gray-500">
+                    Silla de bebé
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={r.silla || false}
+                    readOnly
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                </div>
+
+                {/* Viaje Largo */}
+                <div className="flex items-center">
+                  <span className="mr-1 text-sm text-gray-500">
+                    Viaje fuera de Madrid
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={r.viajeLargo || false}
+                    readOnly
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
                 </div>
               </div>
               {r.requisitos && (

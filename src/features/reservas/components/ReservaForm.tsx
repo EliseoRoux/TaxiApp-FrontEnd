@@ -1,4 +1,3 @@
-// components/ReservaForm.tsx
 import { useForm } from "react-hook-form";
 import type { ReservaFormData, Reserva, Conductor } from "../types/reserva";
 import { useEffect, useState } from "react";
@@ -23,9 +22,13 @@ export const ReservaForm = ({ initialData, onSubmit, onCancel }: Props) => {
   } = useForm<ReservaFormData>({
     defaultValues: {
       ...initialData,
-      fechaReserva: initialData?.fechaReserva || new Date().toISOString().split("T")[0],
+      fechaReserva:
+        initialData?.fechaReserva || new Date().toISOString().split("T")[0],
       hora: initialData?.hora || "12:00",
       eurotaxi: initialData?.eurotaxi || false,
+      mascota: initialData?.mascota || false,
+      silla: initialData?.silla || false,
+      viajeLargo: initialData?.viajeLargo || false,
       nPersona: initialData?.nPersona || 1,
       precio: initialData?.precio || 0,
       precio10: initialData?.precio10 || 0,
@@ -79,7 +82,10 @@ export const ReservaForm = ({ initialData, onSubmit, onCancel }: Props) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(submitHandler)} className="space-y-4 p-4 border rounded-lg">
+    <form
+      onSubmit={handleSubmit(submitHandler)}
+      className="space-y-4 p-4 border rounded-lg"
+    >
       {/* Campos de Cliente */}
       <div>
         <label className="block text-sm font-medium">Nombre Cliente: </label>
@@ -88,7 +94,9 @@ export const ReservaForm = ({ initialData, onSubmit, onCancel }: Props) => {
           className="mt-1 p-2 w-full border rounded"
         />
         {errors.cliente?.nombre && (
-          <span className="text-red-500 text-sm">{errors.cliente.nombre.message}</span>
+          <span className="text-red-500 text-sm">
+            {errors.cliente.nombre.message}
+          </span>
         )}
       </div>
 
@@ -99,7 +107,9 @@ export const ReservaForm = ({ initialData, onSubmit, onCancel }: Props) => {
           className="mt-1 p-2 w-full border rounded"
         />
         {errors.cliente?.telefono && (
-          <span className="text-red-500 text-sm">{errors.cliente.telefono.message}</span>
+          <span className="text-red-500 text-sm">
+            {errors.cliente.telefono.message}
+          </span>
         )}
       </div>
 
@@ -136,7 +146,9 @@ export const ReservaForm = ({ initialData, onSubmit, onCancel }: Props) => {
             className="mt-1 p-2 w-full border rounded"
           />
           {errors.fechaReserva && (
-            <span className="text-red-500 text-sm">{errors.fechaReserva.message}</span>
+            <span className="text-red-500 text-sm">
+              {errors.fechaReserva.message}
+            </span>
           )}
         </div>
 
@@ -182,7 +194,9 @@ export const ReservaForm = ({ initialData, onSubmit, onCancel }: Props) => {
 
       {/* Campo Conductor */}
       <div className="relative">
-        <label className="block text-sm font-medium">Conductor (opcional)</label>
+        <label className="block text-sm font-medium">
+          Conductor (opcional)
+        </label>
         <input
           type="text"
           value={searchTerm}
@@ -199,7 +213,9 @@ export const ReservaForm = ({ initialData, onSubmit, onCancel }: Props) => {
         {searchTerm && (
           <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredConductores.length === 0 ? (
-              <div className="p-2 text-gray-500">No se encontraron conductores</div>
+              <div className="p-2 text-gray-500">
+                No se encontraron conductores
+              </div>
             ) : (
               filteredConductores.map((conductor) => (
                 <div
@@ -216,18 +232,22 @@ export const ReservaForm = ({ initialData, onSubmit, onCancel }: Props) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium">Número de Personas: </label>
+        <label className="block text-sm font-medium">
+          Número de Personas:{" "}
+        </label>
         <input
           type="number"
           {...register("nPersona", {
             required: "Campo obligatorio",
             valueAsNumber: true,
-            min: { value: 1, message: "Mínimo 1 persona" }
+            min: { value: 1, message: "Mínimo 1 persona" },
           })}
           className="mt-1 p-2 w-full border rounded"
         />
         {errors.nPersona && (
-          <span className="text-red-500 text-sm">{errors.nPersona.message}</span>
+          <span className="text-red-500 text-sm">
+            {errors.nPersona.message}
+          </span>
         )}
       </div>
 
@@ -240,6 +260,45 @@ export const ReservaForm = ({ initialData, onSubmit, onCancel }: Props) => {
         />
         <label htmlFor="eurotaxi" className="ml-2 block text-sm font-medium">
           Eurotaxi
+        </label>
+      </div>
+
+      {/* Mascota */}
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="mascota"
+          {...register("mascota")}
+          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        />
+        <label htmlFor="mascota" className="ml-2 block text-sm font-medium">
+          Mascota
+        </label>
+      </div>
+
+      {/* Silla */}
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="silla"
+          {...register("silla")}
+          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        />
+        <label htmlFor="silla" className="ml-2 block text-sm font-medium">
+          Silla de bebé
+        </label>
+      </div>
+
+      {/* Viaje Largo */}
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="viajeLargo"
+          {...register("viajeLargo")}
+          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        />
+        <label htmlFor="viajeLargo" className="ml-2 block text-sm font-medium">
+          Viaje fuera de Madrid
         </label>
       </div>
 

@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import type { ServicioFormData, Servicio, Conductor } from "../types/servicio"; // Añadir Conductor al import
+import type { ServicioFormData, Servicio, Conductor } from "../types/servicio"; 
 import { useEffect, useState } from "react";
 import { useConductores } from "../hooks/useConductores";
 
@@ -34,6 +34,7 @@ export const ServicioForm = ({ initialData, onSubmit, onCancel }: Props) => {
       mascota: initialData?.mascota || false,
       silla: initialData?.silla || false,
       viajeLargo: initialData?.viajeLargo || false,
+      nPersona: initialData?.nPersona || 1,
       precio: initialData?.precio || 0,
       precio10: initialData?.precio
         ? Number((initialData.precio * 0.1).toFixed(2))
