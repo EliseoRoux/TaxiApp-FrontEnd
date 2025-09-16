@@ -1,27 +1,20 @@
-import { useEffect, useState } from "react";
-import type { ConductorResponse } from "../types/conductor";
-import { getConductoresSinDeuda } from "../api/conductorAPI";
+
+import { useQuery } from '@tanstack/react-query';
+import { fetchConductores } from '../api/conductorAPI';
 
 export const useConductoresSinDeuda = () => {
-  const [conductores, setConductores] = useState<ConductorResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Obtenemos TODOS los conductores. React Query nos dará la versión en caché.
+  const { data: todosLosConductores, isLoading, isError } = useQuery({
+    queryKey: ['conductores'], // Usamos la misma clave para acceder a la caché
+    queryFn: fetchConductores,
+  });
 
-  const loadConductores = async () => {
-    try {
-      setLoading(true);
-      const data = await getConductoresSinDeuda();
-      setConductores(data);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
+  // Filtramos la lista en el frontend para quedarnos solo con los que no tienen deuda.
+  const conductoresSinDeuda = todosLosConductores?.filter(c => c.deuda === 0) || [];
+
+  return {
+    conductores: conductoresSinDeuda,
+    isLoading,
+    isError,
   };
-
-  useEffect(() => {
-    loadConductores();
-  }, []);
-
-  return { conductores, loading, error, refresh: loadConductores };
 };

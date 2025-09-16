@@ -1,70 +1,93 @@
-import { useState, useEffect } from 'react';
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+
 import { 
-  fetchServicios, 
-  createServicio, 
-  updateServicio, 
-  deleteServicio 
+    fetchServicios, 
+    createServicio, 
+    updateServicio, 
+    deleteServicio 
 } from '../api/servicioAPI';
-import type { Servicio, ServicioFormData } from '../types/servicio';
+import { fetchClientes } from '../../clientes/api/clienteAPI';
+import { fetchConductores } from '../../conductores/api/conductorAPI';
+import type { ServicioFormData } from '../types/servicio';
 
 export const useServicios = () => {
-  const [servicios, setServicios] = useState<Servicio[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Cargar servicios al montar
-  useEffect(() => {
-    const loadServicios = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchServicios(); // Ya devuelve Servicio[]
-        setServicios(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadServicios();
-  }, []);
+  const { 
+    data: servicios, 
+    isLoading: isLoadingServicios, 
+    isError: isErrorServicios 
+  } = useQuery({
+    queryKey: ['servicios'],
+    queryFn: fetchServicios,
+  });
 
-  const addServicio = async (servicio: ServicioFormData) => {
-    const newServicio = await createServicio(servicio); // Devuelve Servicio
-    setServicios(prev => [newServicio, ...prev]);
-  };
+  const { 
+    data: clientes, 
+    isLoading: isLoadingClientes 
+  } = useQuery({
+    queryKey: ['clientes'],
+    queryFn: fetchClientes,
+  });
 
-  const editServicio = async (id: number, servicio: Partial<ServicioFormData>) => {
-    const updated = await updateServicio(id, servicio); // Devuelve Servicio
-    setServicios(prev => prev.map(s => 
-      s.id_servicio === id ? updated : s
-    ));
-  };
+  const { 
+    data: conductores, 
+    isLoading: isLoadingConductores 
+  } = useQuery({
+    queryKey: ['conductores'],
+    queryFn: fetchConductores,
+  });
 
-  const removeServicio = async (id: number) => {
-    await deleteServicio(id);
-    setServicios(prev => prev.filter(s => s.id_servicio !== id));
-  };
+  const { mutate: addServicio, isPending: isCreating } = useMutation({
+    mutationFn: (servicioData: ServicioFormData) => createServicio(servicioData),
+    onSuccess: () => {
+      toast.success('Servicio creado con éxito');
+      queryClient.invalidateQueries({ queryKey: ['servicios'] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Error al crear el servicio: ${error.message}`);
+    },
+  });
 
-  const refreshServicios = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchServicios(); // Devuelve Servicio[]
-      setServicios(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al refrescar');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { mutate: editServicio, isPending: isUpdating } = useMutation({
+    mutationFn: (variables: { id: number; data: ServicioFormData }) =>
+      updateServicio(variables.id, variables.data),
+    onSuccess: () => {
+      toast.success('Servicio actualizado con éxito');
+      queryClient.invalidateQueries({ queryKey: ['servicios'] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Error al actualizar el servicio: ${error.message}`);
+    },
+  });
+
+  const { mutate: removeServicio, isPending: isDeleting } = useMutation({
+    mutationFn: (id: number) => deleteServicio(id),
+    onSuccess: () => {
+      toast.success('Servicio eliminado con éxito');
+      queryClient.invalidateQueries({ queryKey: ['servicios'] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Error al eliminar el servicio: ${error.message}`);
+    },
+  });
 
   return {
-    servicios,
-    loading,
-    error,
+    servicios: servicios || [],
+    clientes: clientes || [],
+    conductores: conductores || [],
+    isLoading: isLoadingServicios || isLoadingClientes || isLoadingConductores,
+    isError: isErrorServicios,
+    
     addServicio,
+    isCreating,
+
     editServicio,
+    isUpdating,
+
     removeServicio,
-    refresh: refreshServicios
+    isDeleting,
   };
 };

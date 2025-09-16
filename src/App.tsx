@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { ListaServicios } from "./features/servicios/pages/ListaServicios";
-import { ListaClientes } from "./features/clientes/pages/ListaClientes";
-import { ListaConductores } from "./features/conductores/pages/ListaConductores";
-import { ListaReservas } from "./features/reservas/pages/ListaReservas";
-import { ListaDeudas } from "./features/conductores/pages/ListaDeudas";
+import  ListaServicios  from "./features/servicios/pages/ListaServicios";
+import  ListaClientes  from "./features/clientes/pages/ListaClientes";
+import  ListaConductores  from "./features/conductores/pages/ListaConductores";
+import  ListaReservas  from "./features/reservas/pages/ListaReservas";
+import  ListaDeudas  from "./features/conductores/pages/ListaDeudas";
 import { ListaConductoresSinDeuda } from "./features/conductores/pages/ListaConductoresSinDeuda";
-import { FiltroServiciosPorConductor } from "./features/servicios/pages/FiltroServiciosPorConductor";
-import { FiltroReservasPorConductor } from "./features/reservas/pages/FiltroReservasPorConductor";
-import { FiltroHistorialPorConductor } from "./features/historial/pages/HistorialConductor";
+import  FiltroServiciosPorConductor  from "./features/servicios/pages/FiltroServiciosPorConductor";
+import  FiltroReservasPorConductor  from "./features/reservas/pages/FiltroReservasPorConductor";
+import  FiltroHistorialPorConductor  from "./features/historial/pages/HistorialConductor";
 
 type View =
   | "servicios"

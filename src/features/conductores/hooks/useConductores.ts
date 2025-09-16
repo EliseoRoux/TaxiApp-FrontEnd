@@ -1,64 +1,90 @@
-import { useState, useEffect } from 'react';
-import { 
-  fetchConductores, 
-  createConductor, 
-  updateConductor, 
-  deleteConductor ,
-  pagarDeuda
-} from '../api/conductorAPI';
-import type { ConductorFormData, ConductorResponse } from '../types/conductor';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+
+import {
+  fetchConductores,
+  createConductor,
+  updateConductor,
+  deleteConductor,
+  payConductorDebt, // Importamos la nueva función que hemos creado.
+} from "../api/conductorAPI";
+// Corregimos el import: ya no necesitamos 'ConductorResponse' aquí.
+import type { ConductorFormData } from "../types/conductor";
 
 export const useConductores = () => {
-  const [conductores, setConductores] = useState<ConductorResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadConductores();
-  }, []);
+  // OBTENER DATOS (sin cambios)
+  const {
+    data: conductores,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["conductores"],
+    queryFn: fetchConductores,
+  });
 
-   const payDeuda = async (id: number) => {
-    await pagarDeuda(id);
-    await loadConductores();
-  };
+  // CREAR (sin cambios)
+  const { mutate: addConductor, isPending: isCreating } = useMutation({
+    mutationFn: (conductorData: ConductorFormData) =>
+      createConductor(conductorData),
+    onSuccess: () => {
+      toast.success("Conductor creado con éxito");
+      queryClient.invalidateQueries({ queryKey: ["conductores"] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Error al crear el conductor: ${error.message}`);
+    },
+  });
 
-  const loadConductores = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchConductores();
-      setConductores(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // ACTUALIZAR (sin cambios)
+  const { mutate: editConductor, isPending: isUpdating } = useMutation({
+    mutationFn: (variables: { id: number; data: ConductorFormData }) =>
+      updateConductor(variables.id, variables.data),
+    onSuccess: () => {
+      toast.success("Conductor actualizado con éxito");
+      queryClient.invalidateQueries({ queryKey: ["conductores"] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Error al actualizar el conductor: ${error.message}`);
+    },
+  });
 
-  const addConductor = async (conductor: ConductorFormData) => {
-    const newConductor = await createConductor(conductor);
-    await loadConductores();
-    return newConductor;
-  };
+  // ELIMINAR (sin cambios)
+  const { mutate: removeConductor, isPending: isDeleting } = useMutation({
+    mutationFn: (id: number) => deleteConductor(id),
+    onSuccess: () => {
+      toast.success("Conductor eliminado con éxito");
+      queryClient.invalidateQueries({ queryKey: ["conductores"] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Error al eliminar el conductor: ${error.message}`);
+    },
+  });
 
-  const editConductor = async (id: number, conductor: ConductorFormData) => {
-    const updated = await updateConductor(id, conductor);
-    await loadConductores();
-    return updated;
-  };
-
-  const removeConductor = async (id: number) => {
-    await deleteConductor(id);
-    await loadConductores();
-  };
+  // PAGAR DEUDA (sin cambios en la lógica, ya estaba corregido)
+  const { mutate: payDebt, isPending: isPaying } = useMutation({
+    mutationFn: (conductorId: number) => payConductorDebt(conductorId),
+    onSuccess: () => {
+      toast.success("Deuda saldada con éxito");
+      queryClient.invalidateQueries({ queryKey: ["conductores"] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Error al saldar la deuda: ${error.message}`);
+    },
+  });
 
   return {
-    conductores,
-    loading,
-    error,
+    conductores: conductores || [],
+    isLoading,
+    isError,
     addConductor,
+    isCreating,
     editConductor,
+    isUpdating,
     removeConductor,
-    payDeuda,
-    refresh: loadConductores
+    isDeleting,
+    payDebt,
+    isPaying,
   };
 };

@@ -1,62 +1,67 @@
-import { useState, useEffect } from 'react';
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { fetchReservas, createReserva, updateReserva, deleteReserva } from '../api/reservaAPI';
-import type { Reserva, ReservaFormData } from '../types/reserva';
+import { fetchClientes } from '../../clientes/api/clienteAPI';
+import { fetchConductores } from '../../conductores/api/conductorAPI';
+import type { ReservaFormData } from '../types/reserva';
 
 export const useReservas = () => {
-  const [reservas, setReservas] = useState<Reserva[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const loadReservas = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchReservas();
-        setReservas(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadReservas();
-  }, []);
+  const { data: reservas, isLoading: isLoadingReservas } = useQuery({
+    queryKey: ['reservas'],
+    queryFn: fetchReservas,
+  });
 
-  const addReserva = async (reserva: ReservaFormData) => {
-    const newReserva = await createReserva(reserva);
-    setReservas(prev => [newReserva, ...prev]);
-  };
+  const { data: clientes, isLoading: isLoadingClientes } = useQuery({
+    queryKey: ['clientes'],
+    queryFn: fetchClientes,
+  });
 
-  const editReserva = async (id: number, reserva: Partial<ReservaFormData>) => {
-    const updated = await updateReserva(id, reserva);
-    setReservas(prev => prev.map(r => r.idReserva === id ? updated : r));
-  };
+  const { data: conductores, isLoading: isLoadingConductores } = useQuery({
+    queryKey: ['conductores'],
+    queryFn: fetchConductores,
+  });
 
-  const removeReserva = async (id: number) => {
-    await deleteReserva(id);
-    setReservas(prev => prev.filter(r => r.idReserva !== id));
-  };
+  const { mutate: addReserva, isPending: isCreating } = useMutation({
+    mutationFn: (formData: ReservaFormData) => createReserva(formData),
+    onSuccess: () => {
+      toast.success('Reserva creada con éxito');
+      queryClient.invalidateQueries({ queryKey: ['reservas'] });
+    },
+    onError: (error: Error) => toast.error(`Error al crear: ${error.message}`),
+  });
 
-  const refreshReservas = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchReservas();
-      setReservas(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al refrescar');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { mutate: editReserva, isPending: isUpdating } = useMutation({
+    mutationFn: (variables: { id: number; data: Partial<ReservaFormData> }) => updateReserva(variables.id, variables.data),
+    onSuccess: () => {
+      toast.success('Reserva actualizada con éxito');
+      queryClient.invalidateQueries({ queryKey: ['reservas'] });
+    },
+    onError: (error: Error) => toast.error(`Error al actualizar: ${error.message}`),
+  });
+
+  const { mutate: removeReserva, isPending: isDeleting } = useMutation({
+    mutationFn: (id: number) => deleteReserva(id),
+    onSuccess: () => {
+      toast.success('Reserva eliminada con éxito');
+      queryClient.invalidateQueries({ queryKey: ['reservas'] });
+    },
+    onError: (error: Error) => toast.error(`Error al eliminar: ${error.message}`),
+  });
+
 
   return {
-    reservas,
-    loading,
-    error,
+    reservas: reservas || [],
+    clientes: clientes || [],
+    conductores: conductores || [],
+    isLoading: isLoadingReservas || isLoadingClientes || isLoadingConductores,
     addReserva,
+    isCreating,
     editReserva,
+    isUpdating,
     removeReserva,
-    refresh: refreshReservas
+    isDeleting,
   };
 };

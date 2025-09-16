@@ -1,77 +1,91 @@
+
 import { useState } from "react";
-import { useClientes } from "../hooks/useClientes";
-import { ClienteForm } from "../components/ClienteForm";
 import { ClienteList } from "../components/ClienteList";
+import { ClienteForm } from "../components/ClienteForm";
+import { useClientes } from "../hooks/useClientes";
 import type { ClienteResponse, ClienteFormData } from "../types/cliente";
 
-export const ListaClientes = () => {
-  const { clientes, loading, addCliente, editCliente, removeCliente } = useClientes();
-  const [editingCliente, setEditingCliente] = useState<ClienteResponse | null>(null);
-  const [showForm, setShowForm] = useState(false);
+const ListaClientes = () => {
+  const { 
+    clientes, 
+    isLoading, 
+    addCliente, 
+    editCliente, 
+    removeCliente 
+  } = useClientes();
 
-  const handleSubmit = async (data: ClienteFormData) => {
-    try {
-      if (editingCliente) {
-        await editCliente(editingCliente.idCliente, data);
-      } else {
-        await addCliente(data);
-      }
-      setEditingCliente(null);
-      setShowForm(false);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
+  // Estados para controlar la UI
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [editingCliente, setEditingCliente] = useState<ClienteResponse | null>(null);
 
   const handleEdit = (cliente: ClienteResponse) => {
     setEditingCliente(cliente);
-    setShowForm(true);
+    setIsFormVisible(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm("¿Estás seguro de eliminar este cliente?")) {
-      try {
-        await removeCliente(id);
-      } catch (error) {
-        console.error("Error al eliminar:", error);
-        alert("No se puede eliminar el cliente porque tiene servicios asociados");
-      }
+  const handleDelete = (id: number) => {
+    if (window.confirm("¿Estás seguro de que deseas eliminar este cliente?")) {
+      removeCliente(id);
     }
   };
 
-  const handleCancel = () => {
+  const handleFormSubmit = async (data: ClienteFormData) => {
+    if (editingCliente) {
+      // Si estamos editando, llamamos a la mutación de editar
+      editCliente({ id: editingCliente.idCliente, data });
+    } else {
+      // Si no, llamamos a la mutación de crear
+      addCliente(data);
+    }
+    // Cerramos el formulario después de enviar
+    setIsFormVisible(false);
     setEditingCliente(null);
-    setShowForm(false);
+  };
+
+  const handleCancel = () => {
+    setIsFormVisible(false);
+    setEditingCliente(null);
+  };
+  
+  const handleAddNew = () => {
+    setEditingCliente(null);
+    setIsFormVisible(true);
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestión de Clientes</h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-        >
-          Nuevo Cliente
-        </button>
-      </div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Gestión de Clientes</h1>
 
-      {showForm && (
-        <div className="mb-6">
+      {!isFormVisible && (
+        <button
+          onClick={handleAddNew}
+          className="mb-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
+        >
+          Añadir Nuevo Cliente
+        </button>
+      )}
+
+      {isFormVisible && (
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">
+            {editingCliente ? "Editar Cliente" : "Nuevo Cliente"}
+          </h2>
           <ClienteForm
-            initialData={editingCliente || undefined}
-            onSubmit={handleSubmit}
+            onSubmit={handleFormSubmit}
+            initialData={editingCliente || {}}
             onCancel={handleCancel}
           />
         </div>
       )}
-
+      
       <ClienteList
         clientes={clientes}
+        loading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        loading={loading}
       />
     </div>
   );
 };
+
+export default ListaClientes;

@@ -1,10 +1,14 @@
 import { useConductoresSinDeuda } from "../hooks/useConductoresSinDeuda";
 
 export function ListaConductoresSinDeuda() {
-  const { conductores, loading, error } = useConductoresSinDeuda();
 
-  if (loading) return <p>Cargando conductores sin deuda...</p>;
-  if (error) return <p>Error: {error}</p>;
+  const { conductores, isLoading, isError } = useConductoresSinDeuda();
+
+  // Usamos isLoading
+  if (isLoading) return <p>Cargando conductores sin deuda...</p>;
+
+  // Usamos isError y mejoramos el mensaje
+  if (isError) return <p>Error al cargar los conductores sin deuda.</p>;
 
   return (
     <div>
@@ -29,8 +33,12 @@ export function ListaConductoresSinDeuda() {
         <tbody>
           {conductores.map((conductor) => (
             <tr key={conductor.idConductor} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">{conductor.nombre}</td>
-              <td className="px-6 py-4 whitespace-nowrap">{conductor.telefono}</td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                {conductor.nombre}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                {conductor.telefono}
+              </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
                   ${conductor.deuda.toFixed(2)}
@@ -45,7 +53,7 @@ export function ListaConductoresSinDeuda() {
           ))}
         </tbody>
       </table>
-      
+
       {conductores.length === 0 && (
         <div className="text-center py-8 text-gray-500">
           No hay conductores sin deuda

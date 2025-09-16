@@ -1,85 +1,90 @@
 import { useState } from "react";
-import { useConductores } from "../hooks/useConductores";
-import { ConductorForm } from "../components/ConductorForm";
 import { ConductorList } from "../components/ConductorList";
+import { ConductorForm } from "../components/ConductorForm";
+import { useConductores } from "../hooks/useConductores";
 import type { ConductorResponse, ConductorFormData } from "../types/conductor";
 
-export const ListaConductores = () => {
+const ListaConductores = () => {
   const {
     conductores,
-    loading,
+    isLoading,
     addConductor,
     editConductor,
     removeConductor,
-    payDeuda,
+    payDebt,
   } = useConductores();
+
+  const [isFormVisible, setIsFormVisible] = useState(false);
   const [editingConductor, setEditingConductor] =
     useState<ConductorResponse | null>(null);
-  const [showForm, setShowForm] = useState(false);
-
-  const handleSubmit = async (data: ConductorFormData) => {
-    try {
-      if (editingConductor) {
-        await editConductor(editingConductor.idConductor, data);
-      } else {
-        await addConductor(data);
-      }
-      setEditingConductor(null);
-      setShowForm(false);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
 
   const handleEdit = (conductor: ConductorResponse) => {
     setEditingConductor(conductor);
-    setShowForm(true);
+    setIsFormVisible(true);
   };
 
-  const handlePay = async (id: number) => {
-    try {
-      await payDeuda(id);
-    } catch (error) {
-      console.error("Error al pagar deuda:", error);
-      alert("No se pudo marcar como pagada");
+  const handleDelete = (id: number) => {
+    if (
+      window.confirm("¿Estás seguro de que deseas eliminar este conductor?")
+    ) {
+      removeConductor(id);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm("¿Estás seguro de eliminar este conductor?")) {
-      try {
-        await removeConductor(id);
-      } catch (error) {
-        console.error("Error al eliminar:", error);
-        alert("No se puede eliminar el conductor");
-      }
+  // --- CORRECCIÓN AQUÍ ---
+  const handlePay = (conductor: ConductorResponse) => {
+    if (
+      window.confirm(
+        `¿Confirmas que la deuda de ${conductor.nombre} (€${conductor.deuda}) ha sido saldada?`
+      )
+    ) {
+      // Le pasamos solo el ID del conductor a la función payDebt,
+      // que es lo que espera ahora.
+      payDebt(conductor.idConductor);
     }
+  };
+
+  const handleFormSubmit = async (data: ConductorFormData) => {
+    if (editingConductor) {
+      editConductor({ id: editingConductor.idConductor, data });
+    } else {
+      addConductor(data);
+    }
+    setIsFormVisible(false);
+    setEditingConductor(null);
   };
 
   const handleCancel = () => {
+    setIsFormVisible(false);
     setEditingConductor(null);
-    setShowForm(false);
+  };
+
+  const handleAddNew = () => {
+    setEditingConductor(null);
+    setIsFormVisible(true);
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Gestión de Conductores
-        </h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-        >
-          Nuevo Conductor
-        </button>
-      </div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Gestión de Conductores</h1>
 
-      {showForm && (
-        <div className="mb-6">
+      {!isFormVisible && (
+        <button
+          onClick={handleAddNew}
+          className="mb-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
+        >
+          Añadir Nuevo Conductor
+        </button>
+      )}
+
+      {isFormVisible && (
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">
+            {editingConductor ? "Editar Conductor" : "Nuevo Conductor"}
+          </h2>
           <ConductorForm
-            initialData={editingConductor || undefined}
-            onSubmit={handleSubmit}
+            onSubmit={handleFormSubmit}
+            initialData={editingConductor || {}}
             onCancel={handleCancel}
           />
         </div>
@@ -87,11 +92,13 @@ export const ListaConductores = () => {
 
       <ConductorList
         conductores={conductores}
+        loading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onPay={handlePay}
-        loading={loading}
       />
     </div>
   );
 };
+
+export default ListaConductores;

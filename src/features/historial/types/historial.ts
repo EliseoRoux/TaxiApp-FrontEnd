@@ -1,6 +1,11 @@
-import type { Reserva } from "../../reservas/types/reserva";
-import type { Servicio } from "../../servicios/types/servicio";
 
-export type HistorialItem =
-  | (Reserva & { tipo: "reserva"; id: number; fecha: string })
-  | (Servicio & { tipo: "servicio"; id: number; fecha: string });
+// Este tipo representa una entrada en el historial, sea un servicio o una reserva.
+export interface HistorialEntry {
+  id: string; // Usaremos un ID único como "servicio-1" o "reserva-5"
+  tipo: 'Servicio' | 'Reserva';
+  fecha: string;
+  origen: string;
+  destino: string;
+  precio: number;
+  clienteNombre: string;
+}

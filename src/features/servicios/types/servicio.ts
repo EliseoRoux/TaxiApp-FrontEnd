@@ -1,65 +1,48 @@
-export interface Conductor {
+// Tipos para los objetos anidados, para mantener la consistencia
+export interface ConductorEnServicio {
   idConductor: number;
   nombre: string;
   telefono: string;
-  deuda?: number | null;           // null si no hay valor
-  dineroGenerado?: number | null;  // null si no hay valor
 }
 
-export interface Cliente {
-  idCliente?: number;
+export interface ClienteEnServicio {
+  idCliente: number;
   nombre: string;
   telefono: string;
 }
 
-// Versión para lo que retorna Supabase (con arrays)
-export interface ServicioDB {
-  id_servicio: number;
-  origen: string;
-  destino: string;
-  precio: number;
-  fecha: string;
-  eurotaxi: boolean;
-  hora: string;
-  n_persona: number;
-  precio_10: number;
-  requisitos: string;
-  id_conductor: number | null;
-  id_cliente: number | null;
-  conductor: {
-    id_conductor: number;
-    nombre: string;
-    telefono: string;
-    deuda: number | null;
-    dinero_generado: number | null;
-  }[] | null;  // Array de un único conductor o null
-  cliente: {
-    id_cliente: number;
-    nombre: string;
-    telefono: string;
-  }[] | null;  // Array de un único cliente o null
-  mascota: boolean;
-  silla: boolean;
-  viaje_largo: boolean;
-}
-
-// Versión para la aplicación (con objetos)
+// Este es el tipo de dato que usamos en toda la aplicación.
+// Lo actualizamos para incluir los nuevos campos booleanos.
 export interface Servicio {
-  id_servicio: number;
+  idServicio: number;
   origen: string;
   destino: string;
   precio: number;
   fecha: string;
-  eurotaxi: boolean;
   hora: string;
   nPersona: number;
   precio10: number;
   requisitos: string;
-  conductor: Conductor | null; // Puede ser null
-  cliente: Cliente | null;     // Puede ser null
-  mascota: boolean;
-  silla: boolean;
-  viajeLargo: boolean;
+  eurotaxi: boolean;
+  mascota: boolean; // Campo nuevo
+  silla: boolean; // Campo nuevo
+  viajeLargo: boolean; // Campo nuevo
+  cliente: ClienteEnServicio | null;
+  conductor: ConductorEnServicio | null;
 }
 
-export type ServicioFormData = Omit<Servicio, 'id_servicio'>;
+// Este es el alias que usaremos para las respuestas de la API.
+export type ServicioResponse = Servicio;
+
+// El formulario trabajará con este tipo de datos.
+// Lo ajustamos para que envíe exactamente lo que el backend espera.
+export type ServicioFormData = Omit<
+  Servicio,
+  "idServicio" | "cliente" | "conductor"
+> & {
+  // En lugar de un idCliente, enviamos el nombre y el teléfono.
+  clienteNombre: string;
+  clienteTelefono: string;
+  // Para el conductor, seguimos usando el ID.
+  idConductor: number | null;
+};

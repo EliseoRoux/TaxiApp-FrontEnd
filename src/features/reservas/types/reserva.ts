@@ -1,33 +1,36 @@
-export interface Conductor {
-  idConductor: number;
-  nombre: string;
-  telefono: string;
-  deuda?: number | null;
-  dineroGenerado?: number | null;
-}
+import type { ClienteResponse } from "../../clientes/types/cliente";
+import type { ConductorResponse } from "../../conductores/types/conductor";
 
-export interface Cliente {
-  idCliente?: number;
-  nombre: string;
-  telefono: string;
-}
-
+// Actualizamos la estructura de una Reserva para que coincida con el backend.
 export interface Reserva {
   idReserva: number;
   origen: string;
   destino: string;
   nPersona: number;
-  fechaReserva: string;
+  fechaReserva: string; // El backend envía la fecha como un string
   hora: string;
   eurotaxi: boolean;
   requisitos: string;
   precio: number;
   precio10: number;
-  conductor: Conductor | null;
-  cliente: Cliente | null;
-  mascota: boolean;
-  silla: boolean;
-  viajeLargo: boolean;
+  mascota: boolean; // Campo nuevo
+  silla: boolean; // Campo nuevo
+  viajeLargo: boolean; // Campo nuevo
+  cliente: ClienteResponse | null;
+  conductor: ConductorResponse | null;
 }
 
-export type ReservaFormData = Omit<Reserva, 'idReserva'>;
+export type ReservaResponse = Reserva;
+
+// El tipo de datos que manejará nuestro formulario.
+// Lo ajustamos para que envíe exactamente lo que el backend espera.
+export type ReservaFormData = Omit<
+  Reserva,
+  "idReserva" | "cliente" | "conductor"
+> & {
+  // En lugar de un clienteId, enviamos el nombre y el teléfono.
+  clienteNombre: string;
+  clienteTelefono: string;
+  // Para el conductor, mantenemos el ID.
+  conductorId: number | null;
+};

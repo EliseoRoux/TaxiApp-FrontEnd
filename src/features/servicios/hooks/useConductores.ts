@@ -1,27 +1,20 @@
-import { useState, useEffect } from 'react';
-import { fetchConductores } from '../api/servicioAPI';
-import type { Conductor } from '../types/servicio';
+
+import { useQuery } from '@tanstack/react-query';
+import { fetchConductores } from '../../conductores/api/conductorAPI';
 
 export const useConductores = () => {
-  const [conductores, setConductores] = useState<Conductor[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { 
+    data: conductores, 
+    isLoading, 
+    isError 
+  } = useQuery({
+    queryKey: ['conductores'],
+    queryFn: fetchConductores,
+  });
 
-  useEffect(() => {
-    const loadConductores = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchConductores();
-        setConductores(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadConductores();
-  }, []);
-
-  return { conductores, loading, error };
+  return {
+    conductores: conductores || [],
+    isLoading,
+    isError,
+  };
 };
