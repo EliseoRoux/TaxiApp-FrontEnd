@@ -1,7 +1,6 @@
-// Importamos los tipos necesarios de react-hook-form
+
 import { useForm } from "react-hook-form";
-import type { FieldError, Merge, FieldErrorsImpl } from "react-hook-form";
-// Importamos los tipos que definen nuestros datos.
+import { useEffect } from "react";
 import type { ServicioFormData } from "../types/servicio";
 import type { ConductorResponse } from "../../conductores/types/conductor";
 
@@ -21,14 +20,15 @@ export const ServicioForm = ({
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    watch,
+    setValue,
+    formState: { errors }, 
   } = useForm<ServicioFormData>({
     defaultValues: {
-      eurotaxi: initialData?.eurotaxi || false,
-      mascota: initialData?.mascota || false,
-      silla: initialData?.silla || false,
-      viajeLargo: initialData?.viajeLargo || false,
       ...initialData,
+      nPersona: initialData?.nPersona || 1,
+      precio: initialData?.precio || 0,
+      precio10: initialData?.precio10 || 0,
       fecha:
         initialData?.fecha?.split("T")[0] ||
         new Date().toISOString().split("T")[0],
@@ -36,79 +36,75 @@ export const ServicioForm = ({
     },
   });
 
-  // Función auxiliar para mostrar errores de forma segura y tipada.
-  const renderErrorMessage = (
-    error:
-      | FieldError
-      | Merge<FieldError, FieldErrorsImpl<ServicioFormData>>
-      | undefined
-  ) => {
-    if (!error) return null;
-    return <span className="text-red-500 text-sm">{error.message}</span>;
-  };
+  const precioActual = watch("precio");
+
+  useEffect(() => {
+    const precioNumerico = Number(precioActual) || 0;
+    const precioCon10 = precioNumerico * 0.1;
+    setValue("precio10", Number(precioCon10.toFixed(2)));
+  }, [precioActual, setValue]);
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-4 p-4 border rounded-lg bg-white"
     >
-      {/* --- CAMPOS PRINCIPALES --- */}
+      {/* --- CAMPOS PRINCIPALES  --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Origen:
-          </label>
+          <label>Origen:</label>
           <input
             {...register("origen", { required: "El origen es obligatorio" })}
-            className="mt-1 p-2 w-full border rounded-md"
           />
-          {renderErrorMessage(errors.origen)}
+          {errors.origen && (
+            <span className="text-red-500 text-sm">
+              {errors.origen.message}
+            </span>
+          )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Destino:
-          </label>
+          <label>Destino:</label>
           <input
             {...register("destino", { required: "El destino es obligatorio" })}
-            className="mt-1 p-2 w-full border rounded-md"
           />
-          {renderErrorMessage(errors.destino)}
+          {errors.destino && (
+            <span className="text-red-500 text-sm">
+              {errors.destino.message}
+            </span>
+          )}
         </div>
-
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Nombre del Cliente:
-          </label>
+          <label>Nombre del Cliente:</label>
           <input
             {...register("clienteNombre", {
-              required: "El nombre del cliente es obligatorio",
+              required: "El nombre es obligatorio",
             })}
-            className="mt-1 p-2 w-full border rounded-md"
           />
-          {renderErrorMessage(errors.clienteNombre)}
+          {errors.clienteNombre && (
+            <span className="text-red-500 text-sm">
+              {errors.clienteNombre.message}
+            </span>
+          )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Teléfono del Cliente:
-          </label>
+          <label>Teléfono del Cliente:</label>
           <input
             {...register("clienteTelefono", {
-              required: "El teléfono del cliente es obligatorio",
+              required: "El teléfono es obligatorio",
             })}
-            className="mt-1 p-2 w-full border rounded-md"
           />
-          {renderErrorMessage(errors.clienteTelefono)}
+          {errors.clienteTelefono && (
+            <span className="text-red-500 text-sm">
+              {errors.clienteTelefono.message}
+            </span>
+          )}
         </div>
-
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Conductor (Opcional):
-          </label>
+          <label>Conductor (Opcional):</label>
           <select
             {...register("idConductor", {
               setValueAs: (v) => (v ? Number(v) : null),
             })}
-            className="mt-1 p-2 w-full border rounded-md"
           >
             <option value="">Sin asignar</option>
             {conductores.map((conductor) => (
@@ -120,7 +116,7 @@ export const ServicioForm = ({
         </div>
       </div>
 
-      {/* --- DETALLES DEL SERVICIO --- */}
+      {/* --- DETALLES --- */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium">Fecha:</label>
@@ -165,12 +161,13 @@ export const ServicioForm = ({
             type="number"
             step="0.01"
             {...register("precio10", { required: true, valueAsNumber: true })}
-            className="mt-1 p-2 w-full border rounded-md"
+            readOnly
+            className="mt-1 p-2 w-full border rounded-md bg-gray-100"
           />
         </div>
       </div>
 
-      {/* --- REQUISITOS (CHECKBOXES) --- */}
+      {/* --- REQUISITOS --- */}
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-700">
           Requisitos Especiales:
@@ -223,7 +220,7 @@ export const ServicioForm = ({
           type="submit"
           className="px-4 py-2 bg-blue-500 text-white rounded-md"
         >
-          Guardar
+          Guardar Servicio
         </button>
       </div>
     </form>

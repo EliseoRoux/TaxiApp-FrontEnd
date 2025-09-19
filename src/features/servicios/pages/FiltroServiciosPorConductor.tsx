@@ -1,25 +1,36 @@
-import { useState } from "react";
+// src/features/servicios/pages/FiltroServiciosPorConductor.tsx
+
+import { useState, useMemo } from "react";
 import { useConductores } from "../../conductores/hooks/useConductores";
-import { useServiciosPorConductor } from "../hooks/useServiciosPorConductor";
+import { useServicios } from "../hooks/useServicios"; // Usamos el hook que obtiene TODOS los servicios
 import { ServicioList } from "../components/ServicioList";
-// Importamos el tipo específico para un conductor
 import type { ConductorResponse } from "../../conductores/types/conductor";
 
 const FiltroServiciosPorConductor = () => {
   const [selectedConductorId, setSelectedConductorId] = useState<number | null>(
     null
   );
+
+  // Obtenemos las listas completas de conductores y servicios
   const { conductores, isLoading: isLoadingConductores } = useConductores();
-  const {
-    servicios,
-    isLoading: isLoadingServicios,
-    isError,
-  } = useServiciosPorConductor(selectedConductorId);
+  const { servicios, isLoading: isLoadingServicios } = useServicios();
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const id = event.target.value ? Number(event.target.value) : null;
     setSelectedConductorId(id);
   };
+
+  // Filtramos la lista de servicios en el frontend
+  const serviciosFiltrados = useMemo(() => {
+    if (!selectedConductorId) {
+      return servicios; // Si no hay conductor seleccionado, mostramos todos
+    }
+    return servicios.filter(
+      (s) => s.conductor?.idConductor === selectedConductorId
+    );
+  }, [selectedConductorId, servicios]);
+
+  const isLoading = isLoadingConductores || isLoadingServicios;
 
   return (
     <div className="container mx-auto p-4">
@@ -38,9 +49,10 @@ const FiltroServiciosPorConductor = () => {
           id="conductor-select"
           onChange={handleSelectChange}
           className="mt-1 p-2 w-full border rounded-md"
-          disabled={isLoadingConductores}
+          disabled={isLoading}
         >
-          <option value="">-- Seleccione para filtrar --</option>
+          {/* Opción para mostrar todos */}
+          <option value="">-- Todos --</option>
           {conductores.map((conductor: ConductorResponse) => (
             <option key={conductor.idConductor} value={conductor.idConductor}>
               {conductor.nombre}
@@ -49,14 +61,11 @@ const FiltroServiciosPorConductor = () => {
         </select>
       </div>
 
-      {isLoadingServicios && <p>Buscando servicios...</p>}
-      {isError && (
-        <p className="text-red-500">Error al cargar los servicios.</p>
-      )}
+      {isLoading && <p>Cargando datos...</p>}
 
-      {selectedConductorId && !isLoadingServicios && (
+      {!isLoading && (
         <ServicioList
-          servicios={servicios}
+          servicios={serviciosFiltrados}
           onEdit={() =>
             alert("Para editar, ve a la página principal de servicios.")
           }

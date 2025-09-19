@@ -1,4 +1,3 @@
-// src/features/reservas/pages/ListaReservas.tsx
 
 import { useState } from "react";
 import { useReservas } from "../hooks/useReservas";
@@ -9,8 +8,7 @@ import type { Reserva, ReservaFormData } from "../types/reserva";
 const ListaReservas = () => {
   const {
     reservas,
-    clientes,
-    conductores,
+    conductores, 
     isLoading,
     addReserva,
     editReserva,
@@ -51,6 +49,17 @@ const ListaReservas = () => {
     setIsFormVisible(true);
   };
 
+  // Preparamos los datos iniciales para el formulario de edición
+  const initialDataForForm: Partial<ReservaFormData> = editingReserva
+    ? {
+        ...editingReserva,
+        clienteNombre: editingReserva.cliente?.nombre || "",
+        clienteTelefono: editingReserva.cliente?.telefono || "",
+        idConductor: editingReserva.conductor?.idConductor || null,
+        fechaReserva: editingReserva.fechaReserva.substring(0, 10), // Aseguramos formato YYYY-MM-DD
+      }
+    : {};
+
   if (isLoading) return <p className="p-4">Cargando datos...</p>;
 
   return (
@@ -68,28 +77,8 @@ const ListaReservas = () => {
         <ReservaForm
           onSubmit={handleFormSubmit}
           onCancel={handleCancel}
-          clientes={clientes}
           conductores={conductores}
-          initialData={
-            editingReserva
-              ? {
-                  origen: editingReserva.origen,
-                  destino: editingReserva.destino,
-                  nPersona: editingReserva.nPersona,
-                  fechaReserva: editingReserva.fechaReserva.substring(0, 10),
-                  hora: editingReserva.hora,
-                  eurotaxi: editingReserva.eurotaxi,
-                  requisitos: editingReserva.requisitos,
-                  precio: editingReserva.precio,
-                  precio10: editingReserva.precio10,
-                  mascota: editingReserva.mascota,
-                  silla: editingReserva.silla,
-                  viajeLargo: editingReserva.viajeLargo,
-                  clienteId: editingReserva.cliente?.idCliente || 0,
-                  conductorId: editingReserva.conductor?.idConductor || null,
-                }
-              : {}
-          }
+          initialData={initialDataForForm}
         />
       )}
       {!isFormVisible && (

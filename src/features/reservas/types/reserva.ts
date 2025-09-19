@@ -1,9 +1,7 @@
-// src/features/reservas/types/reserva.ts
 
 import type { ClienteResponse } from "../../clientes/types/cliente";
 import type { ConductorResponse } from "../../conductores/types/conductor";
 
-// La estructura de una Reserva que usamos en toda la aplicación
 export interface Reserva {
   idReserva: number;
   origen: string;
@@ -24,12 +22,11 @@ export interface Reserva {
 
 export type ReservaResponse = Reserva;
 
-// CORRECCIÓN DEFINITIVA DEL TIPO PARA EL FORMULARIO
 export type ReservaFormData = Omit<
   Reserva,
   "idReserva" | "cliente" | "conductor"
 > & {
-  // El formulario necesita los IDs para los menús desplegables
-  clienteId: number;
-  conductorId: number | null;
+  clienteNombre: string;
+  clienteTelefono: string;
+  idConductor: number | null;
 };

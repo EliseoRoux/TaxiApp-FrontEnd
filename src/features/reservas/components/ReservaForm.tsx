@@ -1,16 +1,12 @@
-// src/features/reservas/components/ReservaForm.tsx
-
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 import type { ReservaFormData } from "../types/reserva";
-import type { ClienteResponse } from "../../clientes/types/cliente";
 import type { ConductorResponse } from "../../conductores/types/conductor";
 
-// CORRECCIÓN: Se añaden las props que faltaban
 type Props = {
   initialData?: Partial<ReservaFormData>;
   onSubmit: (data: ReservaFormData) => void;
   onCancel: () => void;
-  clientes: ClienteResponse[];
   conductores: ConductorResponse[];
 };
 
@@ -18,35 +14,46 @@ export const ReservaForm = ({
   initialData,
   onSubmit,
   onCancel,
-  clientes,
   conductores,
 }: Props) => {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<ReservaFormData>({
     defaultValues: {
       ...initialData,
+      nPersona: initialData?.nPersona || 1,
+      precio: initialData?.precio || 0,
+      precio10: initialData?.precio10 || 0,
       fechaReserva:
-        initialData?.fechaReserva || new Date().toISOString().split("T")[0],
+        initialData?.fechaReserva?.split("T")[0] ||
+        new Date().toISOString().split("T")[0],
       hora: initialData?.hora || "12:00",
     },
   });
+
+  const precioActual = watch("precio");
+
+  useEffect(() => {
+    const precioNumerico = Number(precioActual) || 0;
+    const precioCon10 = precioNumerico * 0.1;
+    setValue("precio10", Number(precioCon10.toFixed(2)));
+  }, [precioActual, setValue]);
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-4 p-4 border rounded-lg bg-white"
     >
+      {/* --- CAMPOS PRINCIPALES --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Origen:
-          </label>
+          <label>Origen:</label>
           <input
             {...register("origen", { required: "El origen es obligatorio" })}
-            className="mt-1 p-2 w-full border rounded-md"
           />
           {errors.origen && (
             <span className="text-red-500 text-sm">
@@ -55,12 +62,9 @@ export const ReservaForm = ({
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Destino:
-          </label>
+          <label>Destino:</label>
           <input
             {...register("destino", { required: "El destino es obligatorio" })}
-            className="mt-1 p-2 w-full border rounded-md"
           />
           {errors.destino && (
             <span className="text-red-500 text-sm">
@@ -69,38 +73,37 @@ export const ReservaForm = ({
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Cliente:
-          </label>
-          <select
-            {...register("clienteId", {
-              required: "Debe seleccionar un cliente",
-              valueAsNumber: true,
+          <label>Nombre del Cliente:</label>
+          <input
+            {...register("clienteNombre", {
+              required: "El nombre es obligatorio",
             })}
-            className="mt-1 p-2 w-full border rounded-md"
-          >
-            <option value="">Seleccione un cliente</option>
-            {clientes.map((cliente) => (
-              <option key={cliente.idCliente} value={cliente.idCliente}>
-                {cliente.nombre}
-              </option>
-            ))}
-          </select>
-          {errors.clienteId && (
+          />
+          {errors.clienteNombre && (
             <span className="text-red-500 text-sm">
-              {errors.clienteId.message}
+              {errors.clienteNombre.message}
             </span>
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Conductor (Opcional):
-          </label>
+          <label>Teléfono del Cliente:</label>
+          <input
+            {...register("clienteTelefono", {
+              required: "El teléfono es obligatorio",
+            })}
+          />
+          {errors.clienteTelefono && (
+            <span className="text-red-500 text-sm">
+              {errors.clienteTelefono.message}
+            </span>
+          )}
+        </div>
+        <div>
+          <label>Conductor (Opcional):</label>
           <select
-            {...register("conductorId", {
+            {...register("idConductor", {
               setValueAs: (v) => (v ? Number(v) : null),
             })}
-            className="mt-1 p-2 w-full border rounded-md"
           >
             <option value="">Sin asignar</option>
             {conductores.map((conductor) => (
@@ -112,7 +115,7 @@ export const ReservaForm = ({
         </div>
       </div>
 
-      {/* ... (resto del formulario que ya tenías) ... */}
+      {/* --- DETALLES --- */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium">Fecha:</label>
@@ -157,11 +160,13 @@ export const ReservaForm = ({
             type="number"
             step="0.01"
             {...register("precio10", { required: true, valueAsNumber: true })}
-            className="mt-1 p-2 w-full border rounded-md"
+            readOnly
+            className="mt-1 p-2 w-full border rounded-md bg-gray-100"
           />
         </div>
       </div>
 
+      {/* --- REQUISITOS --- */}
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-700">
           Requisitos Especiales:
@@ -201,6 +206,7 @@ export const ReservaForm = ({
         ></textarea>
       </div>
 
+      {/* --- BOTONES --- */}
       <div className="flex justify-end space-x-2">
         <button
           type="button"
