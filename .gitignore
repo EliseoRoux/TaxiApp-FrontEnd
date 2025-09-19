@@ -1,26 +1,23 @@
 # Dependencias
 node_modules/
-.pnp
-.pnp.js
 
-# Entorno de desarrollo
-.env.local
-.env.development
-.env
-
-# Producción
+# Archivos de build y producción
 dist/
-build/
+.vite/
 
-# Misceláneos
-.DS_Store
-*.log
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Ficheros de entorno locales con secretos
+.env.local
+.env.*.local
+
+# Ficheros de configuración de IDEs
 .idea/
 .vscode/
-*.tmp
 
-# Supabase (si usas variables locales)
-.supabase/
+# Ficheros del sistema operativo
+.DS_Store
+Thumbs.db
