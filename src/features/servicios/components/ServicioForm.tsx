@@ -1,4 +1,4 @@
-// Importamos los tipos necesarios de react-hook-form de la manera correcta.
+// Importamos los tipos necesarios de react-hook-form
 import { useForm } from "react-hook-form";
 import type { FieldError, Merge, FieldErrorsImpl } from "react-hook-form";
 // Importamos los tipos que definen nuestros datos.
@@ -18,13 +18,16 @@ export const ServicioForm = ({
   onCancel,
   conductores,
 }: Props) => {
-  // El formulario ahora usa 'ServicioFormData', que es el formato que la API espera.
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<ServicioFormData>({
     defaultValues: {
+      eurotaxi: initialData?.eurotaxi || false,
+      mascota: initialData?.mascota || false,
+      silla: initialData?.silla || false,
+      viajeLargo: initialData?.viajeLargo || false,
       ...initialData,
       fecha:
         initialData?.fecha?.split("T")[0] ||
@@ -72,7 +75,6 @@ export const ServicioForm = ({
           {renderErrorMessage(errors.destino)}
         </div>
 
-        {/* Reemplazamos el <select> por dos <input> para el cliente. */}
         <div>
           <label className="block text-sm font-medium text-gray-700">
             Nombre del Cliente:
@@ -173,7 +175,6 @@ export const ServicioForm = ({
         <label className="block text-sm font-medium text-gray-700">
           Requisitos Especiales:
         </label>
-        {/* Añadimos los nuevos checkboxes que coinciden con la entidad del backend. */}
         <div className="flex flex-wrap gap-4">
           <label className="flex items-center">
             <input type="checkbox" {...register("mascota")} className="mr-2" />{" "}

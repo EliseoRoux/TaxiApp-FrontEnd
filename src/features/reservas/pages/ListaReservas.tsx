@@ -1,3 +1,5 @@
+// src/features/reservas/pages/ListaReservas.tsx
+
 import { useState } from "react";
 import { useReservas } from "../hooks/useReservas";
 import { ReservaForm } from "../components/ReservaForm";
@@ -7,7 +9,8 @@ import type { Reserva, ReservaFormData } from "../types/reserva";
 const ListaReservas = () => {
   const {
     reservas,
-    conductores, // Ya no necesitamos 'clientes'.
+    clientes,
+    conductores,
     isLoading,
     addReserva,
     editReserva,
@@ -28,8 +31,6 @@ const ListaReservas = () => {
     }
   };
 
-  // La lógica de submit ahora es muy sencilla.
-  // Recibe los datos ya listos desde el formulario.
   const handleFormSubmit = (data: ReservaFormData) => {
     if (editingReserva) {
       editReserva({ id: editingReserva.idReserva, data });
@@ -50,18 +51,6 @@ const ListaReservas = () => {
     setIsFormVisible(true);
   };
 
-  // Preparamos los datos para el formulario de edición.
-  // Pasamos el nombre y teléfono del cliente a los campos de texto.
-  const initialDataForForm: Partial<ReservaFormData> = editingReserva
-    ? {
-        ...editingReserva,
-        clienteNombre: editingReserva.cliente?.nombre || "",
-        clienteTelefono: editingReserva.cliente?.telefono || "",
-        conductorId: editingReserva.conductor?.idConductor || null,
-        fechaReserva: editingReserva.fechaReserva.substring(0, 10),
-      }
-    : {};
-
   if (isLoading) return <p className="p-4">Cargando datos...</p>;
 
   return (
@@ -79,8 +68,28 @@ const ListaReservas = () => {
         <ReservaForm
           onSubmit={handleFormSubmit}
           onCancel={handleCancel}
+          clientes={clientes}
           conductores={conductores}
-          initialData={initialDataForForm}
+          initialData={
+            editingReserva
+              ? {
+                  origen: editingReserva.origen,
+                  destino: editingReserva.destino,
+                  nPersona: editingReserva.nPersona,
+                  fechaReserva: editingReserva.fechaReserva.substring(0, 10),
+                  hora: editingReserva.hora,
+                  eurotaxi: editingReserva.eurotaxi,
+                  requisitos: editingReserva.requisitos,
+                  precio: editingReserva.precio,
+                  precio10: editingReserva.precio10,
+                  mascota: editingReserva.mascota,
+                  silla: editingReserva.silla,
+                  viajeLargo: editingReserva.viajeLargo,
+                  clienteId: editingReserva.cliente?.idCliente || 0,
+                  conductorId: editingReserva.conductor?.idConductor || null,
+                }
+              : {}
+          }
         />
       )}
       {!isFormVisible && (

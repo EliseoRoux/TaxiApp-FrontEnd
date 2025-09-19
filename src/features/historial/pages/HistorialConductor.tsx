@@ -1,13 +1,17 @@
+// src/features/historial/pages/HistorialConductor.tsx
 
-import { useState } from 'react';
-import { useConductores } from '../../conductores/hooks/useConductores';
-import { useHistorialConductor } from '../hooks/useHistorialConductor';
-import type { ConductorResponse } from '../../conductores/types/conductor';
+import { useState } from "react";
+import { useConductores } from "../../conductores/hooks/useConductores";
+import { useHistorialConductor } from "../hooks/useHistorialConductor";
+import type { ConductorResponse } from "../../conductores/types/conductor";
 
 const HistorialConductor = () => {
-  const [selectedConductorId, setSelectedConductorId] = useState<number | null>(null);
+  const [selectedConductorId, setSelectedConductorId] = useState<number | null>(
+    null
+  );
   const { conductores, isLoading: isLoadingConductores } = useConductores();
-  const { historial, isLoading: isLoadingHistorial } = useHistorialConductor(selectedConductorId);
+  const { historial, isLoading: isLoadingHistorial } =
+    useHistorialConductor(selectedConductorId);
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const id = event.target.value ? Number(event.target.value) : null;
@@ -18,7 +22,10 @@ const HistorialConductor = () => {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Historial por Conductor</h1>
       <div className="mb-4 p-4 border rounded-lg bg-white">
-        <label htmlFor="conductor-select" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="conductor-select"
+          className="block text-sm font-medium text-gray-700"
+        >
           Seleccione un Conductor:
         </label>
         <select
@@ -36,9 +43,12 @@ const HistorialConductor = () => {
         </select>
       </div>
       {isLoadingHistorial && <p>Buscando historial...</p>}
-      {selectedConductorId && !isLoadingHistorial && (
-        historial.length === 0 ? (
-          <p className="text-center text-gray-500">Este conductor no tiene historial.</p>
+      {selectedConductorId &&
+        !isLoadingHistorial &&
+        (historial.length === 0 ? (
+          <p className="text-center text-gray-500">
+            Este conductor no tiene historial.
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white border">
@@ -54,15 +64,22 @@ const HistorialConductor = () => {
               </thead>
               <tbody>
                 {historial.map((item, index) => (
+                  // KEY CORREGIDA: item.id ya es único, pero el índice añade robustez
                   <tr key={`${item.id}-${index}`} className="border-b">
                     <td className="py-2 px-4">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        item.tipo === 'Servicio' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          item.tipo === "Servicio"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
                         {item.tipo}
                       </span>
                     </td>
-                    <td className="py-2 px-4">{new Date(item.fecha).toLocaleDateString()}</td>
+                    <td className="py-2 px-4">
+                      {new Date(item.fecha).toLocaleDateString()}
+                    </td>
                     <td className="py-2 px-4">{item.clienteNombre}</td>
                     <td className="py-2 px-4">{item.origen}</td>
                     <td className="py-2 px-4">{item.destino}</td>
@@ -72,8 +89,7 @@ const HistorialConductor = () => {
               </tbody>
             </table>
           </div>
-        )
-      )}
+        ))}
     </div>
   );
 };

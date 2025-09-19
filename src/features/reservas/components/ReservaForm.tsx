@@ -1,14 +1,16 @@
-// Importamos los tipos necesarios de la manera correcta.
+// src/features/reservas/components/ReservaForm.tsx
+
 import { useForm } from "react-hook-form";
-import type { FieldError, Merge, FieldErrorsImpl } from "react-hook-form";
-// Importamos nuestros tipos de datos.
 import type { ReservaFormData } from "../types/reserva";
+import type { ClienteResponse } from "../../clientes/types/cliente";
 import type { ConductorResponse } from "../../conductores/types/conductor";
 
+// CORRECCIÓN: Se añaden las props que faltaban
 type Props = {
   initialData?: Partial<ReservaFormData>;
   onSubmit: (data: ReservaFormData) => void;
   onCancel: () => void;
+  clientes: ClienteResponse[];
   conductores: ConductorResponse[];
 };
 
@@ -16,9 +18,9 @@ export const ReservaForm = ({
   initialData,
   onSubmit,
   onCancel,
+  clientes,
   conductores,
 }: Props) => {
-  // El formulario usará 'ReservaFormData', que es el formato que espera la API.
   const {
     register,
     handleSubmit,
@@ -27,22 +29,10 @@ export const ReservaForm = ({
     defaultValues: {
       ...initialData,
       fechaReserva:
-        initialData?.fechaReserva?.split("T")[0] ||
-        new Date().toISOString().split("T")[0],
+        initialData?.fechaReserva || new Date().toISOString().split("T")[0],
       hora: initialData?.hora || "12:00",
     },
   });
-
-  // Función auxiliar para mostrar errores de forma segura y tipada.
-  const renderErrorMessage = (
-    error:
-      | FieldError
-      | Merge<FieldError, FieldErrorsImpl<ReservaFormData>>
-      | undefined
-  ) => {
-    if (!error) return null;
-    return <span className="text-red-500 text-sm">{error.message}</span>;
-  };
 
   return (
     <form
@@ -58,7 +48,11 @@ export const ReservaForm = ({
             {...register("origen", { required: "El origen es obligatorio" })}
             className="mt-1 p-2 w-full border rounded-md"
           />
-          {renderErrorMessage(errors.origen)}
+          {errors.origen && (
+            <span className="text-red-500 text-sm">
+              {errors.origen.message}
+            </span>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">
@@ -68,35 +62,36 @@ export const ReservaForm = ({
             {...register("destino", { required: "El destino es obligatorio" })}
             className="mt-1 p-2 w-full border rounded-md"
           />
-          {renderErrorMessage(errors.destino)}
-        </div>
-
-        {/* Reemplazamos el <select> de cliente por dos <input>. */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Nombre del Cliente:
-          </label>
-          <input
-            {...register("clienteNombre", {
-              required: "El nombre del cliente es obligatorio",
-            })}
-            className="mt-1 p-2 w-full border rounded-md"
-          />
-          {renderErrorMessage(errors.clienteNombre)}
+          {errors.destino && (
+            <span className="text-red-500 text-sm">
+              {errors.destino.message}
+            </span>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Teléfono del Cliente:
+            Cliente:
           </label>
-          <input
-            {...register("clienteTelefono", {
-              required: "El teléfono del cliente es obligatorio",
+          <select
+            {...register("clienteId", {
+              required: "Debe seleccionar un cliente",
+              valueAsNumber: true,
             })}
             className="mt-1 p-2 w-full border rounded-md"
-          />
-          {renderErrorMessage(errors.clienteTelefono)}
+          >
+            <option value="">Seleccione un cliente</option>
+            {clientes.map((cliente) => (
+              <option key={cliente.idCliente} value={cliente.idCliente}>
+                {cliente.nombre}
+              </option>
+            ))}
+          </select>
+          {errors.clienteId && (
+            <span className="text-red-500 text-sm">
+              {errors.clienteId.message}
+            </span>
+          )}
         </div>
-
         <div>
           <label className="block text-sm font-medium text-gray-700">
             Conductor (Opcional):
@@ -117,6 +112,7 @@ export const ReservaForm = ({
         </div>
       </div>
 
+      {/* ... (resto del formulario que ya tenías) ... */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium">Fecha:</label>
@@ -170,7 +166,6 @@ export const ReservaForm = ({
         <label className="block text-sm font-medium text-gray-700">
           Requisitos Especiales:
         </label>
-        {/* Añadimos los nuevos checkboxes. */}
         <div className="flex flex-wrap gap-4">
           <label className="flex items-center">
             <input type="checkbox" {...register("mascota")} className="mr-2" />{" "}

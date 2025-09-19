@@ -3,14 +3,12 @@ import type { ServicioFormData, ServicioResponse } from "../types/servicio";
 
 const SERVICIO_API_URL = `${API_BASE_URL}/servicios`;
 
-// La función de obtener servicios no cambia.
 export const fetchServicios = async (): Promise<ServicioResponse[]> => {
   const response = await fetch(SERVICIO_API_URL);
   if (!response.ok) throw new Error("Error al obtener los servicios");
   return response.json();
 };
 
-// La función de crear un servicio no cambia.
 export const createServicio = async (
   formData: ServicioFormData
 ): Promise<ServicioResponse> => {
@@ -23,14 +21,12 @@ export const createServicio = async (
   return response.json();
 };
 
-// --- FUNCIÓN ACTUALIZADA A PATCH ---
-// Cambiamos el método a 'PATCH' para realizar actualizaciones parciales.
 export const updateServicio = async (
   id: number,
   formData: Partial<ServicioFormData>
 ): Promise<ServicioResponse> => {
   const response = await fetch(`${SERVICIO_API_URL}/${id}`, {
-    method: "PATCH", // Usamos PATCH para enviar solo los campos que cambian.
+    method: "PATCH", 
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(formData),
   });
@@ -42,7 +38,6 @@ export const updateServicio = async (
   return response.json();
 };
 
-// La función de eliminar no cambia.
 export const deleteServicio = async (id: number): Promise<void> => {
   const response = await fetch(`${SERVICIO_API_URL}/${id}`, {
     method: "DELETE",
@@ -50,7 +45,6 @@ export const deleteServicio = async (id: number): Promise<void> => {
   if (!response.ok) throw new Error("Error al eliminar el servicio");
 };
 
-// La función de filtrar por conductor no cambia.
 export const fetchServiciosPorConductor = async (
   conductorId: number
 ): Promise<ServicioResponse[]> => {
