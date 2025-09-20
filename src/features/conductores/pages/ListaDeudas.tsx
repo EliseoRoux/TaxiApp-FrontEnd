@@ -2,14 +2,14 @@ import { useConductores } from "../hooks/useConductores";
 import type { ConductorResponse } from "../types/conductor";
 
 const ListaDeudas = () => {
-  // Obtenemos 'payDebt' del hook, que ahora está corregido.
+  // Obtenemos 'payDebt' del hook
   const { conductores, payDebt, isLoading, isPaying } = useConductores();
 
   const conductoresConDeuda = conductores.filter(c => c.deuda > 0);
 
   const handlePagarDeuda = (conductor: ConductorResponse) => {
     if (window.confirm(`¿Confirmas que la deuda de ${conductor.nombre} (€${conductor.deuda}) ha sido saldada?`)) {
-      // Ahora solo pasamos el ID del conductor, que es lo que la mutación espera.
+      // Pasamos el ID del conductor, que es lo que la mutación espera.
       payDebt(conductor.idConductor);
     }
   };
