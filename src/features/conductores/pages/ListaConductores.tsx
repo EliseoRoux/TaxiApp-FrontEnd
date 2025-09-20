@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react"; 
 import { ConductorList } from "../components/ConductorList";
 import { ConductorForm } from "../components/ConductorForm";
 import { useConductores } from "../hooks/useConductores";
@@ -17,6 +17,18 @@ const ListaConductores = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [editingConductor, setEditingConductor] =
     useState<ConductorResponse | null>(null);
+  // --- Estado para el filtro de búsqueda por teléfono ---
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // --- LÓGICA DE FILTRADO ---
+  const filteredConductores = useMemo(() => {
+    if (!searchTerm) {
+      return conductores; // Si no hay búsqueda, muestra todos
+    }
+    return conductores.filter((conductor) =>
+      conductor.telefono.includes(searchTerm)
+    );
+  }, [conductores, searchTerm]);
 
   const handleEdit = (conductor: ConductorResponse) => {
     setEditingConductor(conductor);
@@ -31,15 +43,12 @@ const ListaConductores = () => {
     }
   };
 
-  // --- CORRECCIÓN AQUÍ ---
   const handlePay = (conductor: ConductorResponse) => {
     if (
       window.confirm(
         `¿Confirmas que la deuda de ${conductor.nombre} (€${conductor.deuda}) ha sido saldada?`
       )
     ) {
-      // Le pasamos solo el ID del conductor a la función payDebt,
-      // que es lo que espera ahora.
       payDebt(conductor.idConductor);
     }
   };
@@ -66,16 +75,17 @@ const ListaConductores = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Gestión de Conductores</h1>
-
-      {!isFormVisible && (
-        <button
-          onClick={handleAddNew}
-          className="mb-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-        >
-          Añadir Nuevo Conductor
-        </button>
-      )}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Gestión de Conductores</h1>
+        {!isFormVisible && (
+          <button
+            onClick={handleAddNew}
+            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+          >
+            Añadir Nuevo Conductor
+          </button>
+        )}
+      </div>
 
       {isFormVisible && (
         <div className="mb-8">
@@ -90,8 +100,21 @@ const ListaConductores = () => {
         </div>
       )}
 
+      {/* --- Barra de búsqueda --- */}
+      {!isFormVisible && (
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Buscar por teléfono..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full md:w-1/3 p-2 border rounded-md"
+          />
+        </div>
+      )}
+
       <ConductorList
-        conductores={conductores}
+        conductores={filteredConductores}
         loading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
