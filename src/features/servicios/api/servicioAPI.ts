@@ -3,8 +3,20 @@ import type { ServicioFormData, ServicioResponse } from "../types/servicio";
 
 const SERVICIO_API_URL = `${API_BASE_URL}/servicios`;
 
+// --- FUNCIÓN AUXILIAR PARA AÑADIR EL TOKEN ---
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    throw new Error("Token de autenticación no encontrado.");
+  }
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+};
+
 export const fetchServicios = async (): Promise<ServicioResponse[]> => {
-  const response = await fetch(SERVICIO_API_URL);
+  const response = await fetch(SERVICIO_API_URL, { headers: getAuthHeaders() });
   if (!response.ok) throw new Error("Error al obtener los servicios");
   return response.json();
 };
@@ -14,7 +26,7 @@ export const createServicio = async (
 ): Promise<ServicioResponse> => {
   const response = await fetch(SERVICIO_API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(formData),
   });
   if (!response.ok) throw new Error("Error al crear el servicio");
@@ -26,8 +38,8 @@ export const updateServicio = async (
   formData: Partial<ServicioFormData>
 ): Promise<ServicioResponse> => {
   const response = await fetch(`${SERVICIO_API_URL}/${id}`, {
-    method: "PATCH", 
-    headers: { "Content-Type": "application/json" },
+    method: "PATCH",
+    headers: getAuthHeaders(),
     body: JSON.stringify(formData),
   });
   if (!response.ok) {
@@ -41,6 +53,7 @@ export const updateServicio = async (
 export const deleteServicio = async (id: number): Promise<void> => {
   const response = await fetch(`${SERVICIO_API_URL}/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
   if (!response.ok) throw new Error("Error al eliminar el servicio");
 };
@@ -49,7 +62,9 @@ export const fetchServiciosPorConductor = async (
   conductorId: number
 ): Promise<ServicioResponse[]> => {
   if (!conductorId) return [];
-  const response = await fetch(`${SERVICIO_API_URL}/conductor/${conductorId}`);
+  const response = await fetch(`${SERVICIO_API_URL}/conductor/${conductorId}`, {
+    headers: getAuthHeaders(),
+  });
   if (!response.ok)
     throw new Error("Error al obtener los servicios del conductor");
   return response.json();
